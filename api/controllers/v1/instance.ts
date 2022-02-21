@@ -10,6 +10,7 @@ import {
   author,
   license,
 } from '../../../package.json'
+import { DI } from '../../di'
 
 export default function () {
   return {
@@ -21,6 +22,7 @@ export default function () {
           new BaseMessage(
             {
               uptime: {
+                server: DI.server_start,
                 process: process.uptime(),
                 system: os.uptime(),
               },
