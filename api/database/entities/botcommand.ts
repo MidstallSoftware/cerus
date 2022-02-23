@@ -1,33 +1,24 @@
-import {
-  Entity,
-  Property,
-  Unique,
-  PrimaryKey,
-  SerializedPrimaryKey,
-  ManyToOne,
-} from '@mikro-orm/core'
+import { Model } from 'objection'
 import Bot from './bot'
 
-@Entity()
-export default class BotCommand {
-  @PrimaryKey()
-  _id!: number
-
-  @SerializedPrimaryKey()
+export default class BotCommand extends Model {
   id!: number
-
-  @Property()
-  @Unique()
-  name: string
-
-  @Property()
-  code: string
-
-  @ManyToOne()
+  name!: string
+  code!: string
   bot!: Bot
+  premium!: boolean
+  usage!: number
 
-  constructor(name: string, code: string) {
-    this.name = name
-    this.code = code
+  static tableName = 'botCommands'
+
+  static relationMappings = {
+    bot: {
+      relation: Model.BelongsToOneRelation,
+      modelClass: Bot,
+      join: {
+        from: 'botCommands.botId',
+        to: 'bots.id',
+      },
+    },
   }
 }

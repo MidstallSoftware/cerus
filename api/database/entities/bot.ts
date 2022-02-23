@@ -1,35 +1,22 @@
-import {
-  Entity,
-  Property,
-  Unique,
-  PrimaryKey,
-  SerializedPrimaryKey,
-  OneToMany,
-  Collection,
-} from '@mikro-orm/core'
+import { Model } from 'objection'
 import BotCommand from './botcommand'
 
-@Entity()
-export default class Bot {
-  @PrimaryKey()
-  _id!: number
-
-  @SerializedPrimaryKey()
+export default class Bot extends Model {
   id!: number
+  name!: string
+  ownerId!: number
+  commands!: BotCommand[]
 
-  @Property()
-  @Unique()
-  discordToken!: string
+  static tableName = 'bots'
 
-  @Property()
-  discordOwner!: string
-
-  @OneToMany({ entity: () => BotCommand, mappedBy: 'bot', orphanRemoval: true })
-  commands!: Collection<BotCommand>
-
-  constructor(token: string, owner: string) {
-    this.discordToken = token
-    this.discordOwner = owner
-    this.commands = new Collection<BotCommand>(this)
+  static relationMappings = {
+    commands: {
+      relation: Model.HasManyRelation,
+      modelClass: BotCommand,
+      join: {
+        from: 'bots.id',
+        to: 'botCommands.botId',
+      },
+    },
   }
 }
