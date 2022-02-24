@@ -47,6 +47,25 @@ export class HttpValidationError extends HttpError {
   }
 }
 
+export class HttpUnauthorizedError extends HttpError {
+  status = 401
+  detail = 'Unauthorized'
+  errors: string[]
+
+  constructor(message: string) {
+    super('Bad request')
+    this.errors = [message]
+  }
+
+  public toJSON(): HttpErrorWithJSON {
+    return {
+      status: this.status,
+      detail: this.detail,
+      errors: this.errors,
+    }
+  }
+}
+
 export class HttpBadRequestError extends HttpError {
   status = 400
   detail = 'Bad request'

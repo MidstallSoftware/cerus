@@ -2,13 +2,15 @@ import { Request, Response, NextFunction } from 'express'
 import { validate, Schema } from 'jsonschema'
 import { HttpValidationError } from '../exceptions'
 
-export function validateBody(schema: Schema) {
+type GetDataFunction = (req: Request) => any
+
+const validateRequest = (getData: GetDataFunction) => (schema: Schema) => {
   return function notFoundHandler(
     req: Request,
     _res: Response,
     next: NextFunction
   ) {
-    const v = validate(req.body, schema)
+    const v = validate(getData(req), schema)
 
     if (v.valid) {
       next()
@@ -17,3 +19,6 @@ export function validateBody(schema: Schema) {
     }
   }
 }
+
+export const validateBody = validateRequest((req) => req.body)
+export const validateQuery = validateRequest((req) => req.query)

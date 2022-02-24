@@ -56,11 +56,13 @@ export default function () {
                   Object.entries(process.env).filter(
                     ([key]) =>
                       ![
+                        'MYSQL_HOST',
                         'MYSQL_PASSWORD',
                         'MYSQL_USER',
                         'MYSQL_DATABASE',
                         'DISCORD_CLIENT_ID',
                         'DISCORD_CLIENT_SECRET',
+                        'STRIPE_KEY',
                       ].includes(key)
                   )
                 ),

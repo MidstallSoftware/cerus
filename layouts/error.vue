@@ -1,18 +1,39 @@
 <template>
   <v-app dark>
-    <h1 v-if="error.statusCode === 404">
-      {{ pageNotFound }}
-    </h1>
-    <h1 v-else>
-      {{ otherError }}
-    </h1>
-    <NuxtLink to="/"> Home page </NuxtLink>
+    <v-main style="padding-top: 16px">
+      <v-row justify="center" align="center">
+        <v-col cols="12" sm="8" md="6">
+          <v-card>
+            <v-card-title>
+              <span v-if="error.statusCode === 404">
+                {{ pageNotFound }}
+              </span>
+              <span v-else>
+                {{ otherError }}
+              </span>
+            </v-card-title>
+            <v-card-text>
+              <p>
+                It looks like the page you were trying to access is unavailable.
+                Please try again or go to a different page. For further
+                informations or to report this problem, check out the
+                <a
+                  href="https://github.com/MidstallSoftware/cerus"
+                  class="text--primary"
+                  >GitHub repository</a
+                >
+                for this website.
+              </p>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-main>
   </v-app>
 </template>
-
 <script>
 export default {
-  name: 'EmptyLayout',
+  name: 'ErrorLayout',
   layout: 'empty',
   props: {
     error: {
@@ -35,9 +56,3 @@ export default {
   },
 }
 </script>
-
-<style scoped>
-h1 {
-  font-size: 20px;
-}
-</style>

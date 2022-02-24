@@ -1,12 +1,21 @@
 import { Model } from 'objection'
+import User from './user'
 
 export default class AccessToken extends Model {
+  id!: number
   token!: string
-  refresh!: string
-  type!: string
-  scope!: string
-  userId!: number
-  expires!: Date
+  user!: User
 
   static tableName = 'accessTokens'
+
+  static relationMappings = {
+    user: {
+      relation: Model.HasOneRelation,
+      modelClass: User,
+      join: {
+        from: 'accessTokens.userId',
+        to: 'users.id',
+      },
+    },
+  }
 }

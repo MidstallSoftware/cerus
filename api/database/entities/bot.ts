@@ -11,7 +11,7 @@ export default class Bot extends Model {
 
   static relationMappings = {
     commands: {
-      relation: Model.HasManyRelation,
+      relation: Model.BelongsToOneRelation,
       modelClass: BotCommand,
       join: {
         from: 'bots.id',

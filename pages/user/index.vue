@@ -1,0 +1,45 @@
+<template>
+  <div style="padding-top: 25px">
+    <v-row justify="center" align="start">
+      <v-col cols="12" md="10" lg="8" xl="8">
+        <v-alert v-if="typeof userInfo != 'object'" type="success" dense>{{
+          $t('loading')
+        }}</v-alert>
+        <v-card v-else> </v-card>
+      </v-col>
+    </v-row>
+  </div>
+</template>
+<i18n>
+{
+  "en": {
+    "loading": "Loading... please wait"
+  }
+}
+</i18n>
+<script lang="ts">
+import { Vue, Component } from 'vue-property-decorator'
+
+interface UserInfo {}
+
+@Component
+export default class PageUserIndex extends Vue {
+  head: {
+    title: 'User'
+    meta: [{ hid: 'og:title'; name: 'og:title'; content: 'User - Cerus' }]
+  }
+
+  middleware: 'auth'
+  userInfo: UserInfo = null
+
+  created() {
+    if (!process.client) return
+
+    if (!this.$auth.loggedIn) window.location.assign('/login')
+
+    this.$axios
+      .get('/api/v1/user/info')
+      .then((res) => (this.userInfo = res.data))
+  }
+}
+</script>

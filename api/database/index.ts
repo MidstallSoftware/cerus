@@ -1,6 +1,7 @@
 import path from 'path'
 import createKnex, { Knex } from 'knex'
 import { Model } from 'objection'
+import waitOn from 'wait-on'
 import winston from '../providers/winston'
 
 const env = process.env.NODE_ENV || 'development'
@@ -29,6 +30,8 @@ const config: Record<string, object> = {
 }
 
 export async function init(): Promise<Knex> {
+  if (env !== 'development')
+    await waitOn({ resources: ['tcp:' + process.env.MYSQL_HOST + ':3306'] })
   winston.debug(`Using knex configuration ${JSON.stringify(config[env])}`)
   const knex = createKnex(config[env])
   Model.knex(knex)
@@ -38,11 +41,7 @@ export async function init(): Promise<Knex> {
       accessTokens: (table) => {
         table.increments('id').primary()
         table.string('token').notNullable()
-        table.string('refresh').notNullable()
-        table.string('type').notNullable()
-        table.string('scope').notNullable()
         table.integer('userId').references('users.id')
-        table.dateTime('expires').notNullable()
       },
       bots: (table) => {
         table.increments('id').primary()
@@ -55,9 +54,13 @@ export async function init(): Promise<Knex> {
         table.string('name').notNullable()
         table.integer('botId').references('bots.id')
         table.boolean('premium').defaultTo(false)
-        table.integer('usage')
         table.text('code').nullable()
         table.dateTime('created').notNullable()
+      },
+      commandCalls: (table) => {
+        table.increments('id').primary()
+        table.integer('commandId').references('botCommands.id')
+        table.dateTime('dateTime').notNullable()
       },
       invoices: (table) => {
         table.increments('id').primary()
@@ -70,7 +73,12 @@ export async function init(): Promise<Knex> {
       },
       users: (table) => {
         table.increments('id').primary()
-        table.string('discordId').notNullable()
+        table.string('discordId').notNullable().unique()
+        table.string('email').notNullable()
+        table
+          .enum('type', ['default', 'admin'])
+          .notNullable()
+          .defaultTo('default')
         table.dateTime('created').notNullable()
       },
     }

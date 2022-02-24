@@ -11,4 +11,15 @@ export default class Invoice extends Model {
   paid!: boolean
 
   static tableName = 'invoices'
+
+  static relationMappings = {
+    user: {
+      relation: Model.BelongsToOneRelation,
+      modelClass: User,
+      join: {
+        from: 'invoices.userId',
+        to: 'users.id',
+      },
+    },
+  }
 }

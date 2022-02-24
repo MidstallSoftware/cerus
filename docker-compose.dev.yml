@@ -1,0 +1,52 @@
+version: '3'
+services:
+  db:
+    image: 'yobasystems/alpine-mariadb:10.4.13'
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - 'data-db:/var/lib/mysql'
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
+      MYSQL_ROOT_HOST: '%'
+    env_file:
+      - ./.env
+    networks:
+      - servers
+    restart: on-failure
+  nuxt:
+    build: .
+    entrypoint: ['npm', 'run', 'dev']
+    depends_on:
+      - db
+    ports:
+      - 8087:3000
+    environment:
+      NODE_ENV: 'development'
+    env_file:
+      - ./.env
+    volumes:
+      - './api:/usr/src/server/api'
+      - './assets:/usr/src/server/assets'
+      - './bot:/usr/src/server/bot'
+      - './components:/usr/src/server/components'
+      - './layouts:/usr/src/server/layouts'
+      - './pages:/usr/src/server/pages'
+      - './static:/usr/src/server/static'
+      - './store:/usr/src/server/store'
+      - type: bind
+        source: './database-debug.sqlite'
+        target: '/usr/src/server/database-debug.sqlite'
+      - type: bind
+        source: './nuxt.config.js'
+        target: '/usr/src/server/nuxt.config.js'
+    networks:
+      - servers
+    restart: on-failure
+
+volumes:
+  data-db:
+
+networks:
+  servers:
+    name: cerus_net
+    driver: bridge

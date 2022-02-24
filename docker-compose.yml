@@ -1,0 +1,36 @@
+version: '3'
+services:
+  db:
+    image: 'yobasystems/alpine-mariadb:10.4.13'
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - 'data-db:/var/lib/mysql'
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
+      MYSQL_ROOT_HOST: '%'
+    env_file:
+      - ./.env
+    networks:
+      - servers
+    restart: on-failure
+  nuxt:
+    build: .
+    depends_on:
+      - db
+    ports:
+      - 8087:3000
+    environment:
+      NODE_ENV: 'production'
+    env_file:
+      - ./.env
+    networks:
+      - servers
+    restart: on-failure
+
+volumes:
+  data-db:
+
+networks:
+  servers:
+    name: cerus_net
+    driver: bridge
