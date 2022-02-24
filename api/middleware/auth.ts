@@ -3,7 +3,7 @@ import winston from '../providers/winston'
 import { HttpUnauthorizedError } from '../exceptions'
 import { checkAccessToken } from '../lib/accesstoken'
 
-export function validateAuth(req: Request, _res: Response, next: NextFunction) {
+export function validateAuth(req: Request, res: Response, next: NextFunction) {
   const header = req.headers.authorization
 
   if (typeof header === 'undefined') {
@@ -13,7 +13,7 @@ export function validateAuth(req: Request, _res: Response, next: NextFunction) {
   ;(async () => {
     try {
       const accessToken = await checkAccessToken(header)
-      console.log(accessToken)
+      res.locals.auth = { accessToken, user: accessToken.user }
 
       next()
     } catch (e) {

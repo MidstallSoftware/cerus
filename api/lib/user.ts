@@ -13,7 +13,7 @@ export async function checkUser(header: string): Promise<User> {
   const query = await User.query().where('discordId', self.id)
   if (query.length > 0) return query[0]
 
-  return await User.query().insert({
+  return await User.query().insertGraphAndFetch({
     discordId: self.id,
     email: self.email,
     type: 'default',

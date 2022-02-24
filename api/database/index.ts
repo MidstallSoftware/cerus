@@ -41,34 +41,34 @@ export async function init(): Promise<Knex> {
       accessTokens: (table) => {
         table.increments('id').primary()
         table.string('token').notNullable()
-        table.integer('userId').references('users.id')
+        table.integer('userId').references('users.id').notNullable()
       },
       bots: (table) => {
         table.increments('id').primary()
         table.string('name').notNullable()
-        table.integer('ownerId').references('users.id')
+        table.integer('ownerId').references('users.id').notNullable()
         table.dateTime('created').notNullable()
       },
       botCommands: (table) => {
         table.increments('id').primary()
         table.string('name').notNullable()
-        table.integer('botId').references('bots.id')
+        table.integer('botId').references('bots.id').notNullable()
         table.boolean('premium').defaultTo(false)
         table.text('code').nullable()
         table.dateTime('created').notNullable()
       },
       commandCalls: (table) => {
         table.increments('id').primary()
-        table.integer('commandId').references('botCommands.id')
+        table.integer('commandId').references('botCommands.id').notNullable()
         table.dateTime('dateTime').notNullable()
       },
       invoices: (table) => {
         table.increments('id').primary()
-        table.integer('userId').references('users.id')
-        table.integer('totalAmount')
-        table.integer('totalCalls')
-        table.integer('totalCommands')
-        table.date('date')
+        table.integer('userId').references('users.id').notNullable()
+        table.integer('totalAmount').defaultTo(0)
+        table.integer('totalCalls').defaultTo(0)
+        table.integer('totalCommands').defaultTo(0)
+        table.date('date').notNullable()
         table.boolean('paid').defaultTo(false)
       },
       users: (table) => {

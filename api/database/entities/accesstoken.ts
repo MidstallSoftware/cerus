@@ -5,6 +5,7 @@ export default class AccessToken extends Model {
   id!: number
   token!: string
   user!: User
+  userId!: number
 
   static tableName = 'accessTokens'
 

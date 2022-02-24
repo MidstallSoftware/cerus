@@ -7,8 +7,10 @@ export async function checkAccessToken(header: string): Promise<AccessToken> {
     .orderBy('id')
     .withGraphFetched('user')
   if (query.length > 0) return query[0]
-  return await AccessToken.query().insert({
+  const user = await checkUser(header)
+  console.log(user)
+  return await AccessToken.query().insertGraphAndFetch({
     token: header,
-    user: await checkUser(header),
+    userId: user.id,
   })
 }
