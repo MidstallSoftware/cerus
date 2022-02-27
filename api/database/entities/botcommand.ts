@@ -5,6 +5,7 @@ export default class BotCommand extends Model {
   id!: number
   name!: string
   code!: string
+  botId!: number
   bot!: Bot
   premium!: boolean
 

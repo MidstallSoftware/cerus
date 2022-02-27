@@ -1,6 +1,7 @@
 import express from 'express'
 import winston from './providers/winston'
 import { notFoundHandler, errorHandler } from './middleware/error'
+import genBots from './routes/v1/bots'
 import genInstance from './routes/v1/instance'
 import genUser from './routes/v1/user'
 import { init } from './di'
@@ -16,6 +17,7 @@ app.use((req, _res, next) => {
 
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
+app.use('/v1/bots', genBots())
 app.use('/v1/instance', genInstance())
 app.use('/v1/user', genUser())
 app.use(notFoundHandler)

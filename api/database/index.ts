@@ -47,6 +47,8 @@ export async function init(): Promise<Knex> {
         table.increments('id').primary()
         table.string('name').notNullable()
         table.integer('ownerId').references('users.id').notNullable()
+        table.string('discordId').notNullable().unique()
+        table.string('token').notNullable().unique()
         table.dateTime('created').notNullable()
       },
       botCommands: (table) => {

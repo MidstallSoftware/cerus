@@ -1,4 +1,3 @@
-174 lines (169 sloc) 4.99 KB
 <template>
   <v-app dark>
     <v-app-bar
@@ -94,9 +93,9 @@
       </template>
     </v-navigation-drawer>
     <v-main>
-      <div class="main-container">
+      <v-container fluid class="main-container">
         <Nuxt />
-      </div>
+      </v-container>
     </v-main>
     <v-footer absolute app>
       <v-card flat tile width="100%" class="text-center">

@@ -118,7 +118,7 @@ export default {
   fontawesome: {
     component: 'fa',
     icons: {
-      solid: ['faSmile', 'faBars', 'faLanguage'],
+      solid: ['faSmile', 'faBars', 'faLanguage', 'faPlus'],
       brands: ['faGithub'],
     },
   },
