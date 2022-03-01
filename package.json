@@ -82,7 +82,7 @@
     "prettier": "^2.5.1",
     "redis": "^4.0.4",
     "stripe": "^8.204.0",
-    "stylelint": "^14.1.0",
+    "stylelint": "^14.5.3",
     "stylelint-config-prettier": "^9.0.3",
     "stylelint-config-recommended-vue": "^1.1.0",
     "stylelint-config-standard": "^24.0.0",
