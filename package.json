@@ -81,7 +81,7 @@
     "postcss-html": "^1.3.0",
     "prettier": "^2.5.1",
     "redis": "^4.0.4",
-    "stripe": "^8.204.0",
+    "stripe": "^8.205.0",
     "stylelint": "^14.1.0",
     "stylelint-config-prettier": "^9.0.3",
     "stylelint-config-recommended-vue": "^1.1.0",
