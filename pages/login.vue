@@ -29,13 +29,13 @@
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator'
 
-@Component
-export default class PageLogin extends Vue {
+@Component({
   head: {
-    title: 'Log In'
-    meta: [{ hid: 'og:title'; name: 'og:title'; content: 'Log In - Cerus' }]
-  }
-
+    title: 'Log In',
+    meta: [{ hid: 'og:title', name: 'og:title', content: 'Log In - Cerus' }],
+  },
+})
+export default class PageLogin extends Vue {
   created() {
     if (this.$auth.loggedIn && process.client) window.location.assign('/user')
   }

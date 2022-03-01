@@ -1,11 +1,18 @@
 import { Request, Response, NextFunction } from 'express'
 import { Client } from 'discord.js'
-import { getInt } from '../../utils'
+import {
+  createPageQueryCache,
+  createQueryCache,
+  createSingleQueryCache,
+  getInt,
+  invalidateCacheWithPrefix,
+} from '../../utils'
 import Bot from '../../database/entities/bot'
 import User from '../../database/entities/user'
 import { HttpUnauthorizedError } from '../../exceptions'
 import { BaseMessage } from '../../message'
 import BotCommand from '../../database/entities/botcommand'
+import winston from '../../providers/winston'
 
 export default function () {
   return {
@@ -35,6 +42,9 @@ export default function () {
                 token: token.toString(),
               })
               .then(async (bot) => {
+                invalidateCacheWithPrefix('bots')
+                  .then(() => {})
+                  .catch((e) => winston.error(e))
                 res.json(
                   new BaseMessage(
                     {
@@ -80,6 +90,10 @@ export default function () {
             const commandCount = await BotCommand.query()
               .where('botId', id)
               .delete()
+
+            invalidateCacheWithPrefix('bots')
+              .then(() => {})
+              .catch((e) => winston.error(e))
             res.json(
               new BaseMessage(
                 {
@@ -103,12 +117,17 @@ export default function () {
         const id = parseInt(req.query.id.toString())
         const user: User = res.locals.auth.user
 
-        Bot.query()
-          .findOne({
-            ownerId: user.id,
-          })
-          .findById(id)
-          .withGraphFetched('commands')
+        createSingleQueryCache(
+          Bot,
+          Bot.query()
+            .findOne({
+              ownerId: user.id,
+            })
+            .findById(id)
+            .withGraphFetched('commands'),
+          'bots'
+        )
+          .read()
           .then(async (bot) => {
             res.json(
               new BaseMessage(
@@ -170,12 +189,15 @@ export default function () {
           .where('ownerId', user.id)
           .withGraphFetched('commands')
         if (pageSize > 0) {
-          query
-            .page(offset, pageSize)
+          createPageQueryCache(Bot, query.page(offset, pageSize), 'bots')
+            .read()
             .then(({ results, total }) => send(results, total))
             .catch((e) => next(e))
         } else {
-          query.then((bots) => send(bots, bots.length)).catch((e) => next(e))
+          createQueryCache(Bot, query, 'bots')
+            .read()
+            .then((bots) => send(bots, bots.length))
+            .catch((e) => next(e))
         }
       } catch (e) {
         next(e)

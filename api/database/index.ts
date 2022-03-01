@@ -7,7 +7,7 @@ import winston from '../providers/winston'
 const env = process.env.NODE_ENV || 'development'
 const production = env === 'production'
 
-const config: Record<string, object> = {
+const config: Record<string, Knex.Config> = {
   development: {
     client: 'sqlite3',
     useNullAsDefault: true,
@@ -30,8 +30,8 @@ const config: Record<string, object> = {
 }
 
 export async function init(): Promise<Knex> {
-  if (env !== 'development')
-    await waitOn({ resources: ['tcp:' + process.env.MYSQL_HOST + ':3306'] })
+  await waitOn({ resources: ['tcp:' + process.env.MYSQL_HOST + ':3306'] })
+
   winston.debug(`Using knex configuration ${JSON.stringify(config[env])}`)
   const knex = createKnex(config[env])
   Model.knex(knex)

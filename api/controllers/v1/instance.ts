@@ -62,6 +62,8 @@ export default function () {
                         'MYSQL_DATABASE',
                         'DISCORD_CLIENT_ID',
                         'DISCORD_CLIENT_SECRET',
+                        'REDIS_HOST',
+                        'REDIS_PASSWORD',
                         'STRIPE_KEY',
                       ].includes(key)
                   )

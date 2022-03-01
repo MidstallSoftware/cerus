@@ -24,13 +24,12 @@ interface UserInfo {}
 @Component({
   middleware: 'auth',
   layout: 'user',
+  head: {
+    title: 'User',
+    meta: [{ hid: 'og:title', name: 'og:title', content: 'User - Cerus' }],
+  },
 })
 export default class PageUserIndex extends Vue {
-  head: {
-    title: 'User'
-    meta: [{ hid: 'og:title'; name: 'og:title'; content: 'User - Cerus' }]
-  }
-
   userInfo: UserInfo = null
 
   created() {

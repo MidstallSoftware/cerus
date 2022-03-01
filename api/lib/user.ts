@@ -1,5 +1,6 @@
 import fetch from 'node-fetch'
 import User from '../database/entities/user'
+import { createQueryCache } from '../utils'
 
 export async function checkUser(header: string): Promise<User> {
   const self: Record<string, any> = await (
@@ -10,7 +11,10 @@ export async function checkUser(header: string): Promise<User> {
     })
   ).json()
 
-  const query = await User.query().where('discordId', self.id)
+  const query = await createQueryCache(
+    User,
+    User.query().where('discordId', self.id)
+  ).read()
   if (query.length > 0) return query[0]
 
   return await User.query().insertGraphAndFetch({

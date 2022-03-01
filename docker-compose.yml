@@ -13,10 +13,22 @@ services:
     networks:
       - servers
     restart: on-failure
+  cache:
+    image: 'redis:6.2-alpine'
+    command: >
+      --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - 'data-cache:/var/lib/redis'
+    env_file:
+      - ./.env
+    networks:
+      - servers
+    restart: on-failure
   nuxt:
     build: .
     depends_on:
       - db
+      - cache
     ports:
       - 8087:3000
     environment:
