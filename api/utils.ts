@@ -1,4 +1,4 @@
-import { Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { Model, Page, QueryBuilder } from 'objection'
 import { DI } from './di'
 import { BaseMessage } from './message'
@@ -142,35 +142,38 @@ export function createPageQueryCache<M extends Model>(
 
 export type ResponseCacheWriter = (
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => BaseMessage | Promise<BaseMessage>
 
-export async function sendCachedResponse(
-  req: Request,
-  res: Response,
-  writer: ResponseCacheWriter
-): Promise<void> {
-  const key = JSON.stringify({
-    auth: req.headers.authorization || false,
-    method: req.method,
-    ip: req.ip,
-    url: req.originalUrl,
-  })
+export function sendCachedResponse(writer: ResponseCacheWriter) {
+  return async function send(req: Request, res: Response, next: NextFunction) {
+    const key = JSON.stringify({
+      auth: req.headers.authorization || false,
+      method: req.method,
+      body: req.body,
+      params: req.params,
+      query: req.query,
+      url: req.originalUrl,
+    })
 
-  const cache = createCache(key, {
-    fetch() {
-      const w = writer(req, res)
-      if (w instanceof BaseMessage) return Promise.resolve(w)
-      return w
-    },
-    read(data: string) {
-      return Promise.resolve(JSON.parse(data) as BaseMessage)
-    },
-    write(data: BaseMessage) {
-      return Promise.resolve(JSON.stringify(data.toJSON()))
-    },
-  })
-
-  const value = await cache.read()
-  res.json(value)
+    try {
+      const value = await getCache(key, {
+        fetch() {
+          const w = writer(req, res, next)
+          if (w instanceof BaseMessage) return Promise.resolve(w)
+          return w
+        },
+        read(data: string) {
+          return Promise.resolve(JSON.parse(data) as BaseMessage)
+        },
+        write(data: BaseMessage) {
+          return Promise.resolve(JSON.stringify(data.toJSON()))
+        },
+      })
+      res.json(value)
+    } catch (e) {
+      next(e)
+    }
+  }
 }
