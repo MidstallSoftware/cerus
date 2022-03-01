@@ -10,7 +10,7 @@ const app = express()
 
 app.use((req, _res, next) => {
   winston.debug(
-    `receving request from ${req.protocol}://${req.hostname}${req.originalUrl} (${req.method})`
+    `receiving request from ${req.protocol}://${req.hostname}${req.originalUrl} (${req.method})`
   )
   next()
 })

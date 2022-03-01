@@ -1,5 +1,7 @@
+import { Request, Response } from 'express'
 import { Model, Page, QueryBuilder } from 'objection'
 import { DI } from './di'
+import { BaseMessage } from './message'
 import winston from './providers/winston'
 
 export function getInt(
@@ -136,4 +138,39 @@ export function createPageQueryCache<M extends Model>(
       )
     },
   })
+}
+
+export type ResponseCacheWriter = (
+  req: Request,
+  res: Response
+) => BaseMessage | Promise<BaseMessage>
+
+export async function sendCachedResponse(
+  req: Request,
+  res: Response,
+  writer: ResponseCacheWriter
+): Promise<void> {
+  const key = JSON.stringify({
+    auth: req.headers.authorization || false,
+    method: req.method,
+    ip: req.ip,
+    url: req.originalUrl,
+  })
+
+  const cache = createCache(key, {
+    fetch() {
+      const w = writer(req, res)
+      if (w instanceof BaseMessage) return Promise.resolve(w)
+      return w
+    },
+    read(data: string) {
+      return Promise.resolve(JSON.parse(data) as BaseMessage)
+    },
+    write(data: BaseMessage) {
+      return Promise.resolve(JSON.stringify(data.toJSON()))
+    },
+  })
+
+  const value = await cache.read()
+  res.json(value)
 }

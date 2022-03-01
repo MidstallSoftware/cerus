@@ -11,15 +11,16 @@ import {
   license,
 } from '../../../package.json'
 import { DI } from '../../di'
+import { sendCachedResponse } from '../../utils'
 
 export default function () {
   return {
-    stats: (_req: Request, res: Response, next: NextFunction) => {
+    stats: (req: Request, res: Response, next: NextFunction) => {
       try {
-        const memFree = os.freemem()
-        const memTotal = os.totalmem()
-        res.json(
-          new BaseMessage(
+        sendCachedResponse(req, res, () => {
+          const memFree = os.freemem()
+          const memTotal = os.totalmem()
+          return new BaseMessage(
             {
               uptime: {
                 server: DI.server_start,
@@ -39,46 +40,49 @@ export default function () {
             },
             'instance:stats'
           )
-        )
+        }).catch((e) => next(e))
       } catch (e) {
         next(e)
       }
     },
-    info: (_req: Request, res: Response, next: NextFunction) => {
+    info: (req: Request, res: Response, next: NextFunction) => {
       try {
-        res.json(
-          new BaseMessage(
-            {
-              implements: ['v1'],
-              process: {
-                pid: process.pid,
-                env: Object.fromEntries(
-                  Object.entries(process.env).filter(
-                    ([key]) =>
-                      ![
-                        'MYSQL_HOST',
-                        'MYSQL_PASSWORD',
-                        'MYSQL_USER',
-                        'MYSQL_DATABASE',
-                        'DISCORD_CLIENT_ID',
-                        'DISCORD_CLIENT_SECRET',
-                        'REDIS_HOST',
-                        'REDIS_PASSWORD',
-                        'STRIPE_KEY',
-                      ].includes(key)
-                  )
-                ),
+        sendCachedResponse(
+          req,
+          res,
+          () =>
+            new BaseMessage(
+              {
+                implements: ['v1'],
+                process: {
+                  pid: process.pid,
+                  env: Object.fromEntries(
+                    Object.entries(process.env).filter(
+                      ([key]) =>
+                        ![
+                          'MYSQL_HOST',
+                          'MYSQL_PASSWORD',
+                          'MYSQL_USER',
+                          'MYSQL_DATABASE',
+                          'DISCORD_CLIENT_ID',
+                          'DISCORD_CLIENT_SECRET',
+                          'REDIS_HOST',
+                          'REDIS_PASSWORD',
+                          'STRIPE_KEY',
+                        ].includes(key)
+                    )
+                  ),
+                },
+                repository,
+                homepage,
+                devDependencies,
+                author,
+                license,
+                version,
               },
-              repository,
-              homepage,
-              devDependencies,
-              author,
-              license,
-              version,
-            },
-            'instance:info'
-          )
-        )
+              'instance:info'
+            )
+        ).catch((e) => next(e))
       } catch (e) {
         next(e)
       }
