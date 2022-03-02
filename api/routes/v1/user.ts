@@ -6,6 +6,6 @@ export default function (): Router {
   const router = Router()
   const controller = genController()
 
-  router.get('/info', validateAuth, controller.info)
+  router.get('/', validateAuth, controller.info)
   return router
 }

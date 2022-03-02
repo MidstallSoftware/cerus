@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { urlencoded, json } from 'express'
 import winston from './providers/winston'
 import { notFoundHandler, errorHandler } from './middleware/error'
 import genBots from './routes/v1/bots'
@@ -15,8 +15,8 @@ app.use((req, _res, next) => {
   next()
 })
 
-app.use(express.urlencoded({ extended: false }))
-app.use(express.json())
+app.use(urlencoded({ extended: false }))
+app.use(json())
 app.use('/v1/bots', genBots())
 app.use('/v1/instance', genInstance())
 app.use('/v1/user', genUser())

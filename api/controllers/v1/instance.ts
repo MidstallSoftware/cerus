@@ -10,17 +10,54 @@ import {
   license,
 } from '../../../package.json'
 import { DI } from '../../di'
-import { sendCachedResponse } from '../../utils'
+import { createQueryCache, sendCachedResponse } from '../../utils'
+import Bot from '../../database/entities/bot'
+import User from '../..//database/entities/user'
 
 export default function () {
   return {
-    stats: sendCachedResponse(() => {
+    stats: sendCachedResponse(async () => {
       const memFree = os.freemem()
       const memTotal = os.totalmem()
+      const onlineBots = DI.bots.size
+      const totalBots = (
+        await createQueryCache(Bot, Bot.query().count('id')).read()
+      ).length
+      const totalAdminUsers = (
+        (
+          await createQueryCache(
+            User,
+            User.query().where('type', 'admin').count('type')
+          ).read()
+        )[0] as any
+      )['count(`type`)'] as number
+      const totalNormalUsers = (
+        (
+          await createQueryCache(
+            User,
+            User.query().where('type', 'default').count('type')
+          ).read()
+        )[0] as any
+      )['count(`type`)'] as number
+      const totalUsers = (
+        (
+          await createQueryCache(User, User.query().count('id')).read()
+        )[0] as any
+      )['count(`id`)'] as number
       return new BaseMessage(
         {
+          bots: {
+            online: onlineBots,
+            offline: totalBots - onlineBots,
+            total: totalBots,
+          },
+          users: {
+            admins: totalAdminUsers,
+            normal: totalNormalUsers,
+            total: totalUsers,
+          },
           uptime: {
-            server: DI.server_start,
+            server: Date.now() - DI.server_start.getTime(),
             process: process.uptime(),
             system: os.uptime(),
           },

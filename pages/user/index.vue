@@ -33,8 +33,6 @@ export default class PageUserIndex extends Vue {
   userInfo: UserInfo = null
 
   created() {
-    if (!process.client) return
-
     this.$axios
       .get('/api/v1/user/info')
       .then((res) => (this.userInfo = res.data))

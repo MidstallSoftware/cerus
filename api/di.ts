@@ -3,12 +3,15 @@ import { Knex } from 'knex'
 import Stripe from 'stripe'
 import waitOn from 'wait-on'
 import { init as dbInit } from './database'
+import Bot from './database/entities/bot'
+import BotInstance from './bot'
 
 export const DI = {} as {
   stripe: Stripe
   knex: Knex
   server_start: Date
   redis: RedisClientType
+  bots: Map<Bot, BotInstance>
 }
 
 export async function init(): Promise<void> {
@@ -24,5 +27,7 @@ export async function init(): Promise<void> {
     typescript: true,
   })
   DI.knex = await dbInit()
+
   DI.server_start = new Date()
+  DI.bots = new Map()
 }

@@ -4,6 +4,8 @@ import { DI } from './di'
 import { BaseMessage } from './message'
 import winston from './providers/winston'
 
+const CACHE_EXPIRE_TIME = 30
+
 export function getInt(
   str?: string | undefined | null,
   def: number = 0
@@ -32,7 +34,7 @@ export async function getCache<T>(
     winston.debug(`Saving "${key}" to cache`)
     const value = await opts.write(await opts.fetch())
     DI.redis.set(key, value, {
-      EX: 60 * 60 * 24,
+      EX: CACHE_EXPIRE_TIME,
     })
     return opts.read(value)
   }
@@ -47,7 +49,7 @@ export async function setCache<T>(
   await DI.redis.del(key)
   const value = await opts.write(data)
   await DI.redis.set(key, value, {
-    EX: 60 * 60 * 24,
+    EX: CACHE_EXPIRE_TIME,
   })
 }
 

@@ -17,7 +17,7 @@
       </a>
 
       <v-menu open-on-hover offset-y>
-        <template v-slot:activator="{ on, attrs }">
+        <template #activator="{ on, attrs }">
           <v-btn v-bind="attrs" v-on="on">
             <span
               ><fa :icon="['fas', 'language']" />
@@ -63,10 +63,10 @@
         </v-list-item>
       </v-list>
 
-      <template v-slot:prepend>
+      <template #prepend>
         <div class="pa-2">
           <v-menu top>
-            <template v-slot:activator="{ on, attrs }">
+            <template #activator="{ on, attrs }">
               <v-btn v-bind="attrs" v-on="on">
                 <span
                   ><fa :icon="['fas', 'language']" />
@@ -119,7 +119,7 @@
             class="d-inline"
           >
             <v-tooltip bottom>
-              <template v-slot:activator="{ on, attrs }">
+              <template #activator="{ on, attrs }">
                 <a :href="social.href" class="text--primary mx-4">
                   <v-btn elevation="0" icon v-bind="attrs" v-on="on">
                     <fa :icon="['fab', social.icon]" />

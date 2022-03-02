@@ -49,7 +49,15 @@ export async function init(): Promise<Knex> {
         table.integer('ownerId').references('users.id').notNullable()
         table.string('discordId').notNullable().unique()
         table.string('token').notNullable().unique()
+        table.boolean('premium').defaultTo(false)
         table.dateTime('created').notNullable()
+      },
+      botCalls: (table) => {
+        table.increments('id').primary()
+        table.integer('commandId').references('botCommands.id').nullable()
+        table.integer('messageId').references('botMessages.id').nullable()
+        table.enum('type', ['command', 'message']).notNullable()
+        table.dateTime('dateTime').notNullable()
       },
       botCommands: (table) => {
         table.increments('id').primary()
@@ -59,10 +67,12 @@ export async function init(): Promise<Knex> {
         table.text('code').nullable()
         table.dateTime('created').notNullable()
       },
-      commandCalls: (table) => {
+      botMessages: (table) => {
         table.increments('id').primary()
-        table.integer('commandId').references('botCommands.id').notNullable()
-        table.dateTime('dateTime').notNullable()
+        table.string('regex').notNullable()
+        table.integer('botId').references('bots.id').notNullable()
+        table.text('code').nullable()
+        table.dateTime('created').notNullable()
       },
       invoices: (table) => {
         table.increments('id').primary()

@@ -6,7 +6,7 @@ export default class User extends Model {
   id!: number
   discordId!: string
   email!: string
-  created!: Date
+  created!: number
   accessTokens!: AccessToken[]
   bots!: Bot[]
   type!: 'default' | 'admin'
@@ -15,7 +15,7 @@ export default class User extends Model {
 
   static relationMappings = {
     accessTokens: {
-      relation: Model.BelongsToOneRelation,
+      relation: Model.HasManyRelation,
       modelClass: AccessToken,
       join: {
         from: 'users.id',
@@ -23,7 +23,7 @@ export default class User extends Model {
       },
     },
     bots: {
-      relation: Model.BelongsToOneRelation,
+      relation: Model.HasManyRelation,
       modelClass: Bot,
       join: {
         from: 'users.id',

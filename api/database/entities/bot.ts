@@ -2,6 +2,7 @@ import { APIUser } from 'discord-api-types'
 import { Client } from 'discord.js'
 import { Model } from 'objection'
 import BotCommand from './botcommand'
+import BotMessage from './botmessage'
 import User from './user'
 
 export default class Bot extends Model {
@@ -12,7 +13,9 @@ export default class Bot extends Model {
   owner!: User
   discordId!: string
   token!: string
+  premuim!: boolean
   commands!: BotCommand[]
+  messages!: BotMessage[]
 
   fetch(): Promise<APIUser> {
     return new Promise((resolve, reject) => {
@@ -47,8 +50,16 @@ export default class Bot extends Model {
 
   static relationMappings = {
     commands: {
-      relation: Model.BelongsToOneRelation,
+      relation: Model.HasManyRelation,
       modelClass: BotCommand,
+      join: {
+        from: 'bots.id',
+        to: 'botCommands.botId',
+      },
+    },
+    messages: {
+      relation: Model.HasManyRelation,
+      modelClass: BotMessage,
       join: {
         from: 'bots.id',
         to: 'botCommands.botId',
