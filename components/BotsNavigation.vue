@@ -1,11 +1,5 @@
 <template>
-  <v-navigation-drawer
-    app
-    :permanent.sync="permanent"
-    mini-variant
-    absolute
-    mini-variant-width="56"
-  >
+  <v-navigation-drawer v-model="model" mini-variant absolute>
     <v-list-item class="px-2" href="/user/bot/@new">
       <v-list-item-avatar>
         <v-tooltip right>
@@ -83,6 +77,7 @@ interface Bot {
 @Component
 export default class BotsNavigation extends Vue {
   bots: Bot[] = []
+  model = true
 
   @Prop({ default: false, type: Boolean }) permanent: boolean = false
 

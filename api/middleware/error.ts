@@ -24,6 +24,7 @@ export function errorHandler(
   if (err instanceof HttpError) {
     Object.assign(response, err.toJSON())
   } else {
+    response.detail = err.message
     winston.error(err.stack)
   }
 

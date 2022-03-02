@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { Model, Page, QueryBuilder } from 'objection'
 import { DI } from './di'
+import { HttpNotFoundError } from './exceptions'
 import { BaseMessage } from './message'
 import winston from './providers/winston'
 
@@ -84,7 +85,10 @@ export function createQueryCache<M extends Model>(
   const { bindings, sql } = query.toKnexQuery().toSQL()
   return createCache(`${prefix}_${sql}:${bindings}`, {
     async fetch() {
-      return await query.execute()
+      const v = await query.execute()
+      if (v === undefined || v === null)
+        throw new HttpNotFoundError('Query returned no results')
+      return v
     },
     read(data: string): Promise<M[]> {
       const values = JSON.parse(data) as any[]
@@ -105,7 +109,10 @@ export function createSingleQueryCache<M extends Model>(
   const { bindings, sql } = query.toKnexQuery().toSQL()
   return createCache(`${prefix}_${sql}:${bindings}`, {
     async fetch() {
-      return await query.execute()
+      const v = await query.execute()
+      if (v === undefined || v === null)
+        throw new HttpNotFoundError('Query returned no results')
+      return v
     },
     read(data: string): Promise<M> {
       return Promise.resolve(OModel.fromJson(JSON.parse(data)) as M)
@@ -124,7 +131,10 @@ export function createPageQueryCache<M extends Model>(
   const { bindings, sql } = query.toKnexQuery().toSQL()
   return createCache(`${prefix}_${sql}:${bindings}`, {
     async fetch() {
-      return await query.execute()
+      const v = await query.execute()
+      if (v === undefined || v === null)
+        throw new HttpNotFoundError('Query returned no results')
+      return v
     },
     read(data: string) {
       const pg = JSON.parse(data) as { total: number; results: any[] }
@@ -162,9 +172,13 @@ export function sendCachedResponse(writer: ResponseCacheWriter) {
     try {
       const value = await getCache(key, {
         fetch() {
-          const w = writer(req, res, next)
-          if (w instanceof BaseMessage) return Promise.resolve(w)
-          return w
+          try {
+            const w = writer(req, res, next)
+            if (w instanceof BaseMessage) return Promise.resolve(w)
+            return w
+          } catch (e) {
+            return null
+          }
         },
         read(data: string) {
           return Promise.resolve(JSON.parse(data) as BaseMessage)

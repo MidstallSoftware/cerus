@@ -1,4 +1,4 @@
-interface BaseMessageInterface {
+export interface BaseMessageInterface {
   data?: any
   error?: {
     message: string
@@ -25,5 +25,9 @@ export class BaseMessage {
           type: 'error',
         }
       : { data: this.data, type: this.type }
+  }
+
+  static fromJSON(json: BaseMessageInterface): BaseMessage {
+    return new BaseMessage(json.data, json.error || json.type)
   }
 }

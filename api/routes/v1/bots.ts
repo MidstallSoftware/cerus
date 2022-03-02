@@ -29,7 +29,7 @@ export default function (): Router {
         id: { type: 'string', required: true, pattern: /[0-9]+/ },
       },
     }),
-    controller.list
+    controller.get
   )
 
   router.delete(

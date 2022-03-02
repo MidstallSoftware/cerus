@@ -137,6 +137,7 @@ export default function () {
           avatar: await value.getAvatar(),
           created: value.created,
           commands: value.commands.map((cmd) => ({
+            id: cmd.id,
             name: cmd.name,
             premium: cmd.premium,
           })),
@@ -164,6 +165,7 @@ export default function () {
               avatar: avatars[i],
               created: bot.created,
               commands: (bot.commands || []).map((cmd) => ({
+                id: cmd.id,
                 name: cmd.name,
                 premium: cmd.premium,
               })),

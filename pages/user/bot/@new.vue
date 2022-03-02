@@ -1,9 +1,5 @@
 <template>
   <div>
-    <v-toolbar dense>
-      <v-toolbar-title>{{ $t('title') }}</v-toolbar-title>
-    </v-toolbar>
-
     <v-form ref="form" v-model="valid" class="pa-2">
       <v-alert v-if="error != null" type="error">{{ error.message }}</v-alert>
       <v-text-field
