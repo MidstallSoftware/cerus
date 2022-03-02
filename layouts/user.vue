@@ -10,13 +10,6 @@
     </v-main>
   </v-app>
 </template>
-<i18n>
-{
-  "en": {
-    "new-bot": "Create a Bot"
-  }
-}
-</i18n>
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 

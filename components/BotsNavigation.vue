@@ -8,7 +8,7 @@
   >
     <v-list-item class="px-2" href="/user/bot/@new">
       <v-list-item-avatar>
-        <v-tooltip bottom>
+        <v-tooltip right>
           <template #activator="{ on, attrs }">
             <a href="/user/bot/@new" class="text--primary mx-4">
               <v-btn rounded v-bind="attrs" v-on="on">
@@ -31,20 +31,29 @@
         active-class="bot-active"
       >
         <v-list-item-action>
-          <a :href="'/user/bot/' + bot.id.toString()">
-            <v-avatar size="42">
-              <v-img
-                :src="
-                  'https://cdn.discordapp.com/avatars/' +
-                  bot.discordId +
-                  '/' +
-                  bot.avatar +
-                  '.png'
-                "
-                :alt="bot.name"
-              />
-            </v-avatar>
-          </a>
+          <v-tooltip right>
+            <template #activator="{ on, attrs }">
+              <a
+                :href="'/user/bot/' + bot.id.toString()"
+                v-bind="attrs"
+                v-on="on"
+              >
+                <v-avatar size="42">
+                  <v-img
+                    :src="
+                      'https://cdn.discordapp.com/avatars/' +
+                      bot.discordId +
+                      '/' +
+                      bot.avatar +
+                      '.png'
+                    "
+                    :alt="bot.name"
+                  />
+                </v-avatar>
+              </a>
+            </template>
+            <span>{{ bot.name }}</span>
+          </v-tooltip>
         </v-list-item-action>
 
         <v-list-item-content>
@@ -54,6 +63,13 @@
     </v-list>
   </v-navigation-drawer>
 </template>
+<i18n>
+{
+  "en": {
+    "new-bot": "Create a Bot"
+  }
+}
+</i18n>
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
 
@@ -68,7 +84,7 @@ interface Bot {
 export default class BotsNavigation extends Vue {
   bots: Bot[] = []
 
-  @Prop() permament: boolean
+  @Prop() permament: boolean = false
 
   created() {
     this.$axios
