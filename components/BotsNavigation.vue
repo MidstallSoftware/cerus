@@ -1,7 +1,7 @@
 <template>
   <v-navigation-drawer
     app
-    :permanent="permanent"
+    :permanent.sync="permanent"
     mini-variant
     absolute
     mini-variant-width="56"
@@ -84,12 +84,14 @@ interface Bot {
 export default class BotsNavigation extends Vue {
   bots: Bot[] = []
 
-  @Prop() permament: boolean = false
+  @Prop({ default: false, type: Boolean }) permanent: boolean = false
 
   created() {
-    this.$axios
-      .get('/api/v1/bots/list')
-      .then((res) => (this.bots = res.data.data.list))
+    if (!process.env.TS_JEST) {
+      this.$axios
+        .get('/api/v1/bots/list')
+        .then((res) => (this.bots = res.data.data.list))
+    }
   }
 }
 </script>

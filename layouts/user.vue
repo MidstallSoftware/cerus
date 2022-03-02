@@ -3,7 +3,7 @@
     <v-navigation-drawer v-if="isBotView" app permanent width="300">
       <BotsNavigation />
     </v-navigation-drawer>
-    <BotsNavigation v-else permament />
+    <BotsNavigation v-else permanent />
 
     <v-main>
       <Nuxt />
