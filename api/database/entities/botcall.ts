@@ -4,6 +4,8 @@ import BotMessage from './botmessage'
 
 export default class BotCall extends Model {
   id!: number
+  commandId!: number
+  messageId!: number
   command!: BotCommand
   message!: BotMessage
   dateTime!: Date

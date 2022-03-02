@@ -1,5 +1,6 @@
 import { Client, CommandInteraction, Message } from 'discord.js'
 import Bot from '../database/entities/bot'
+import BotCall from '../database/entities/botcall'
 import { defineContext } from './context'
 
 type MessageHook = (msg: Message) => {}
@@ -28,6 +29,13 @@ export default class BotInstance {
             .then((runner: MessageHook) => {
               runner(msg)
             })
+            .then(() =>
+              BotCall.query().insert({
+                messageId: hook.id,
+                type: 'message',
+                dateTime: new Date(),
+              })
+            )
             .catch(() => {})
         }
       }
@@ -48,6 +56,13 @@ export default class BotInstance {
           .then((runner: CommandHook) => {
             runner(inter)
           })
+          .then(() =>
+            BotCall.query().insert({
+              commandId: cmd.id,
+              type: 'command',
+              dateTime: new Date(),
+            })
+          )
           .catch(() => {})
       }
     })
