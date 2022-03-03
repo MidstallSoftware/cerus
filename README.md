@@ -13,3 +13,4 @@ Commands are coded in Lua with the ability to get premium features such as a cac
 ### Per Bot
 
 - Message Hooks w/ RegEx
+- Analytics (planned)
