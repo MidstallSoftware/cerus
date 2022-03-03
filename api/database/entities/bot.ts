@@ -13,7 +13,7 @@ export default class Bot extends Model {
   owner!: User
   discordId!: string
   token!: string
-  premuim!: boolean
+  premium!: boolean
   commands!: BotCommand[]
   messages!: BotMessage[]
 

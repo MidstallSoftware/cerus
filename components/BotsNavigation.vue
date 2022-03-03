@@ -1,5 +1,5 @@
 <template>
-  <v-navigation-drawer v-model="model" mini-variant absolute>
+  <div>
     <v-list-item class="px-2" href="/user/bot/@new">
       <v-list-item-avatar>
         <v-tooltip right>
@@ -55,7 +55,7 @@
         </v-list-item-content>
       </v-list-item>
     </v-list>
-  </v-navigation-drawer>
+  </div>
 </template>
 <i18n>
 {
@@ -65,21 +65,12 @@
 }
 </i18n>
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
-
-interface Bot {
-  avatar: string
-  discordId: string
-  id: number
-  name: string
-}
+import { Component, Vue } from 'vue-property-decorator'
+import { APIBot } from '~/api/types'
 
 @Component
 export default class BotsNavigation extends Vue {
-  bots: Bot[] = []
-  model = true
-
-  @Prop({ default: false, type: Boolean }) permanent: boolean = false
+  bots: APIBot[] = []
 
   created() {
     if (!process.env.TS_JEST) {

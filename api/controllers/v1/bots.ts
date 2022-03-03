@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { Client } from 'discord.js'
+import { QueryBuilder } from 'objection'
 import {
   createPageQueryCache,
   createQueryCache,
@@ -13,7 +14,47 @@ import User from '../../database/entities/user'
 import { HttpUnauthorizedError } from '../../exceptions'
 import { BaseMessage } from '../../message'
 import BotCommand from '../../database/entities/botcommand'
+import BotMessage from '../../database/entities/botmessage'
 import winston from '../../providers/winston'
+import { APIBot } from '../../types'
+
+async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
+  const cache = createSingleQueryCache(Bot, query, 'bots')
+
+  const value = await cache.read()
+
+  const cacheMessages = createQueryCache(
+    BotMessage,
+    BotMessage.query().where('botId', value.id),
+    'messages'
+  )
+  const cacheCommands = createQueryCache(
+    BotCommand,
+    BotCommand.query().where('botId', value.id),
+    'commands'
+  )
+
+  const valueMessages = await cacheMessages.read()
+  const valueCommands = await cacheCommands.read()
+
+  return {
+    id: value.id,
+    name: value.name,
+    discordId: value.discordId,
+    avatar: await value.getAvatar(),
+    created: value.created,
+    premium: value.premium,
+    messages: valueMessages.map((msg) => ({
+      id: msg.id,
+      regex: msg.regex,
+    })),
+    commands: valueCommands.map((cmd) => ({
+      id: cmd.id,
+      name: cmd.name,
+      premium: cmd.premium,
+    })),
+  }
+}
 
 export default function () {
   return {
@@ -117,33 +158,10 @@ export default function () {
       const id = parseInt(req.query.id.toString())
       const user: User = res.locals.auth.user
 
-      const cache = createSingleQueryCache(
-        Bot,
-        Bot.query()
-          .findOne({
-            ownerId: user.id,
-          })
-          .findById(id)
-          .withGraphFetched('commands'),
-        'bots'
+      const bot = await fetchBot(
+        Bot.query().findOne({ ownerId: user.id }).findById(id)
       )
-
-      const value = await cache.read()
-      return new BaseMessage(
-        {
-          id: value.id,
-          name: value.name,
-          discordId: value.discordId,
-          avatar: await value.getAvatar(),
-          created: value.created,
-          commands: value.commands.map((cmd) => ({
-            id: cmd.id,
-            name: cmd.name,
-            premium: cmd.premium,
-          })),
-        },
-        'bots:get'
-      )
+      return new BaseMessage(bot, 'bots:get')
     }),
     list: sendCachedResponse(async (req, res) => {
       if (!res.locals.auth && !res.locals.auth.user)
@@ -153,23 +171,12 @@ export default function () {
       const pageSize = getInt((req.query.count || '0').toString())
 
       const send = async (results: Bot[], total: number) => {
-        const avatars = await Promise.all(
-          results.map(async (r) => await r.getAvatar())
+        const list = await Promise.all(
+          results.map(({ id }) => fetchBot(Bot.query().findById(id)))
         )
         return new BaseMessage(
           {
-            list: results.map((bot, i) => ({
-              id: bot.id,
-              name: bot.name,
-              discordId: bot.discordId,
-              avatar: avatars[i],
-              created: bot.created,
-              commands: (bot.commands || []).map((cmd) => ({
-                id: cmd.id,
-                name: cmd.name,
-                premium: cmd.premium,
-              })),
-            })),
+            list,
             total,
             pageSize,
             offset,
@@ -179,9 +186,7 @@ export default function () {
       }
 
       const user: User = res.locals.auth.user
-      const query = Bot.query()
-        .where('ownerId', user.id)
-        .withGraphFetched('commands')
+      const query = Bot.query().where('ownerId', user.id).select('id')
       if (pageSize > 0) {
         const cache = await createPageQueryCache(
           Bot,

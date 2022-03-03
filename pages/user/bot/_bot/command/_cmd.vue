@@ -11,27 +11,15 @@
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator'
 import { BaseMessageInterface } from '../../../../../api/message'
-
-interface Command {
-  id: number
-  name: string
-}
-
-interface Bot {
-  avatar: string
-  discordId: string
-  id: number
-  name: string
-  commands: Command[]
-}
+import { APIBot, APICommand } from '~/api/types'
 
 @Component({
   middleware: 'auth',
   layout: 'user',
 })
 export default class PageUserBotCommandSlug extends Vue {
-  bot: Bot = {} as Bot
-  command: Command = {} as Command
+  bot: APIBot = {} as APIBot
+  command: APICommand = {} as APICommand
 
   created() {
     this.$axios
