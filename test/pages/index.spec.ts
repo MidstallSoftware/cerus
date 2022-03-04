@@ -1,8 +1,8 @@
 import { createLocalVue, mount } from '@vue/test-utils'
 import Vuetify from 'vuetify'
-import BotsNavigation from '../components/BotsNavigation.vue'
+import PageIndex from '../../pages/index.vue'
 
-describe('BotsNavigation', () => {
+describe('PageIndex', () => {
   const localVue = createLocalVue()
   let vuetify: Vuetify
 
@@ -15,7 +15,7 @@ describe('BotsNavigation', () => {
   })
 
   test('is a Vue instance', () => {
-    const wrapper = mount(BotsNavigation, {
+    const wrapper = mount(PageIndex, {
       localVue,
       vuetify,
       mocks: {

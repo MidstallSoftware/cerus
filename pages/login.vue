@@ -9,7 +9,7 @@
           <v-card-title>{{ $t('login') }}</v-card-title>
           <v-card-text>{{ $t('nouser.message') }}</v-card-text>
           <v-card-actions>
-            <v-btn @click="doLogin">
+            <v-btn id="login" @click="doLogin">
               {{ $t('login') }}
             </v-btn>
           </v-card-actions>

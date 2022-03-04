@@ -50,7 +50,7 @@ export default class BotInstance {
         if (cmd === null) return
 
         defineContext(this, cmd.code, {
-          premium: cmd.premium,
+          premium: cmd.premium === 1,
           type: 'command',
         })
           .then((runner: CommandHook) => {

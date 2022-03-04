@@ -42,8 +42,12 @@ async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
     name: value.name,
     discordId: value.discordId,
     avatar: await value.getAvatar(),
-    created: value.created,
-    premium: value.premium,
+    created: (() => {
+      const d = new Date()
+      d.setTime(value.created)
+      return d
+    })(),
+    premium: value.premium === 1,
     messages: valueMessages.map((msg) => ({
       id: msg.id,
       regex: msg.regex,
@@ -51,7 +55,7 @@ async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
     commands: valueCommands.map((cmd) => ({
       id: cmd.id,
       name: cmd.name,
-      premium: cmd.premium,
+      premium: cmd.premium === 1,
     })),
   }
 }
@@ -78,7 +82,7 @@ export default function () {
             Bot.query()
               .insertGraph({
                 name: client.user.username,
-                created: new Date(),
+                created: Date.now(),
                 ownerId: user.id,
                 discordId: discordId.toString(),
                 token: token.toString(),

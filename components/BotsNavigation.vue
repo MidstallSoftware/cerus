@@ -73,11 +73,9 @@ export default class BotsNavigation extends Vue {
   bots: APIBot[] = []
 
   created() {
-    if (!process.env.TS_JEST) {
-      this.$axios
-        .get('/api/v1/bots/list')
-        .then((res) => (this.bots = res.data.data.list))
-    }
+    this.$axios
+      .get('/api/v1/bots/list')
+      .then((res) => (this.bots = res.data.data.list))
   }
 }
 </script>

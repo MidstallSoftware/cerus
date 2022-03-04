@@ -95,6 +95,7 @@ export default function () {
                       'REDIS_HOST',
                       'REDIS_PASSWORD',
                       'STRIPE_KEY',
+                      'STRIPE_WEBHOOK_SECRET',
                     ].includes(key)
                 )
               ),

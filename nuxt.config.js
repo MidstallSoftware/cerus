@@ -118,7 +118,14 @@ export default {
   fontawesome: {
     component: 'fa',
     icons: {
-      solid: ['faSmile', 'faBars', 'faLanguage', 'faPlus'],
+      solid: [
+        'faSmile',
+        'faBars',
+        'faLanguage',
+        'faPlus',
+        'faXmark',
+        'faCheck',
+      ],
       brands: ['faGithub'],
     },
   },
@@ -127,6 +134,9 @@ export default {
   vuetify: {
     customVariables: ['~/assets/variables.scss'],
     treeShake: true,
+    defaultAssets: {
+      icons: 'fa',
+    },
     icons: {
       iconfont: 'faSvg',
     },

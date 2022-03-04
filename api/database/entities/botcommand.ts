@@ -7,7 +7,7 @@ export default class BotCommand extends Model {
   code!: string
   botId!: number
   bot!: Bot
-  premium!: boolean
+  premium!: number
 
   static tableName = 'botCommands'
 

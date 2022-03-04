@@ -14,7 +14,7 @@ export async function checkUser(header: string): Promise<User> {
 
   const query = await createQueryCache(
     User,
-    User.query().where('discordId', self.id).withGraphFetched('bots')
+    User.query().where('discordId', self.id)
   ).read()
   if (query.length > 0) return query[0]
 

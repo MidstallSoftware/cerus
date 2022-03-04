@@ -8,12 +8,12 @@ import User from './user'
 export default class Bot extends Model {
   id!: number
   name!: string
-  created!: Date
+  created!: number
   ownerId!: number
   owner!: User
   discordId!: string
   token!: string
-  premium!: boolean
+  premium!: number
   commands!: BotCommand[]
   messages!: BotMessage[]
 

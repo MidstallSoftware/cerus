@@ -1,10 +1,56 @@
 <template>
-  <div></div>
+  <div>
+    <v-row>
+      <v-col cols="12">
+        <v-card id="basic">
+          <v-card-title>{{ $t('info') }}</v-card-title>
+          <v-card-text>
+            <p>
+              <fa :icon="['fas', bot.premium ? 'check' : 'xmark']" />
+              {{ $t('premium') }}
+            </p>
+            <p>{{ $t('created', { value: bot.created }) }}</p>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+    <v-row v-if="!bot.premium">
+      <v-col cols="12">
+        <v-card id="premium">
+          <v-card-title>{{ $t('premium-signup') }}</v-card-title>
+          <v-card-text>
+            <p>{{ $t('premium-signup-text') }}</p>
+            <h2>{{ $t('premium-features-heading') }}</h2>
+            <ul>
+              <li v-for="i in 2" :key="i">{{ $t(`premium-feature${i}`) }}</li>
+            </ul>
+
+            <v-form ref="premiumSignup">
+              <v-alert v-if="error != null" type="error">{{
+                error.message
+              }}</v-alert>
+              <v-btn type="submit" @click="premiumSubmit">
+                {{ $t('premium-signup-btn') }}
+              </v-btn>
+            </v-form>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+  </div>
 </template>
 <i18n>
 {
   "en": {
-    "title": "Info"
+    "info": "Information",
+    "premium": "Premium",
+    "created": "Created: {value}",
+    "premium-signup": "Sign up for Premium",
+    "premium-signup-text": "Making your bot a premium bot gives you access to the best features we can provide.",
+    "premium-features-heading": "Features",
+    "premium-feature1": "Analytics",
+    "premium-feature2": "Message Hooks",
+    "premium-signup-btn": "Sign up now"
   }
 }
 </i18n>
@@ -18,12 +64,33 @@ import { APIBot } from '~/api/types'
   layout: 'user',
 })
 export default class PageUserBotSlug extends Vue {
-  bot: APIBot = {} as APIBot
+  bot: APIBot = { premium: false } as APIBot
+  validSettings: boolean = false
+  premiumValid: boolean = false
+  error: Error = null
+
+  premiumSubmit(e: Event) {
+    e.preventDefault()
+    if ((this.$refs.premiumSignup as any).validate()) {
+      this.$axios
+        .post(`/api/v1/billing/checkout`, {
+          id: parseInt(this.$route.params.bot),
+          type: 'bot',
+          lookup_key: 'prem_bot',
+          url: window.location.href,
+        })
+        .then((res) => {
+          window.location.assign(res.data.data.url)
+        })
+        .catch((e) => (this.error = e))
+    }
+  }
 
   created() {
     this.$axios
       .$get(`/api/v1/bots?id=${this.$route.params.bot}`)
       .then((msg: BaseMessageInterface) => {
+        msg.data.created = new Date(msg.data.created)
         this.bot = msg.data
       })
       .catch((e) =>
