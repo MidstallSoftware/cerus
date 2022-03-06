@@ -56,6 +56,9 @@ export async function init(): Promise<Knex> {
         table.increments('id').primary()
         table.integer('commandId').references('botCommands.id').nullable()
         table.integer('messageId').references('botMessages.id').nullable()
+        table.string('result').nullable()
+        table.string('errors').nullable()
+        table.string('messages').nullable()
         table.enum('type', ['command', 'message']).notNullable()
         table.dateTime('dateTime').notNullable()
       },

@@ -10,6 +10,9 @@ export default class BotCall extends Model {
   message!: BotMessage
   dateTime!: Date
   type!: 'message' | 'command'
+  result!: string
+  errors!: string
+  messages!: string
 
   static tableName = 'botCalls'
 

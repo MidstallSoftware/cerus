@@ -33,14 +33,6 @@
           </v-list-item>
 
           <v-subheader>{{ $t('commands') }}</v-subheader>
-          <v-list-item v-if="bot.commands.length === 0" link>
-            <a
-              :href="'/user/bot/' + $route.params.bot + '/command/@new'"
-              class="pl-4 text--primary text-decoration-none"
-            >
-              <v-list-item-title>{{ $t('new-command') }}</v-list-item-title>
-            </a>
-          </v-list-item>
           <v-list-item v-for="command in bot.commands" :key="command.id" link>
             <a
               :href="
@@ -51,16 +43,36 @@
               <v-list-item-title v-text="command.name" />
             </a>
           </v-list-item>
-
-          <v-subheader v-if="bot.premium">{{ $t('messages') }}</v-subheader>
-          <v-list-item v-if="bot.messages.length === 0 && bot.premium" link>
+          <v-list-item link class="pl-8">
             <a
-              :href="'/user/bot' + $route.params.bot + '/message/@new'"
+              :href="'/user/bot/' + $route.params.bot + '/command/@new'"
               class="pl-4 text--primary text-decoration-none"
             >
-              <v-list-item-title>{{ $t('new-message') }}</v-list-item-title>
+              <v-list-item-title>{{ $t('new-command') }}</v-list-item-title>
             </a>
           </v-list-item>
+
+          <div v-if="bot.premium">
+            <v-subheader>{{ $t('messages') }}</v-subheader>
+            <v-list-item v-for="message in bot.messages" :key="message.id" link>
+              <a
+                :href="
+                  '/user/bot/' + $route.params.bot + '/message/' + message.id
+                "
+                class="pl-4 text--primary text-decoration-none"
+              >
+                <v-list-item-title v-text="message.regex" />
+              </a>
+            </v-list-item>
+            <v-list-item link class="pl-8">
+              <a
+                :href="'/user/bot' + $route.params.bot + '/message/@new'"
+                class="pl-4 text--primary text-decoration-none"
+              >
+                <v-list-item-title>{{ $t('new-message') }}</v-list-item-title>
+              </a>
+            </v-list-item>
+          </div>
         </v-list>
       </div>
     </v-navigation-drawer>
@@ -105,7 +117,9 @@ export default class LayoutUser extends Vue {
 
   get command(): APICommand | undefined {
     if (!this.isCommandView) return undefined
-    return this.bot.commands[parseInt(this.$route.params.cmd)]
+    return this.bot.commands.find(
+      ({ id }) => id === parseInt(this.$route.params.cmd.toString())
+    )
   }
 
   get isBotView(): boolean {
@@ -125,7 +139,7 @@ export default class LayoutUser extends Vue {
 
   get botIndex(): number | undefined {
     if (!this.isBotView) return undefined
-    return parseInt(this.$route.params.bot)
+    return parseInt(this.$route.params.bot.toString())
   }
 
   get title(): string {
@@ -133,7 +147,12 @@ export default class LayoutUser extends Vue {
       'user-bot-@new': () => this.$t('new-bot').toString(),
       'user-bot-bot-command-@new': () => this.$t('new-command').toString(),
       'user-bot-bot': () => this.$t('bot-info').toString(),
-      'user-bot-bot-command-cmd': () => this.command.name,
+      'user-bot-bot-command-cmd': () => {
+        const cmd = this.bot.commands.find(
+          ({ id }) => id === parseInt(this.$route.params.cmd.toString())
+        )
+        return typeof cmd === 'object' ? cmd.name : ''
+      },
     }
 
     for (const str of Object.keys(titleGen)) {
@@ -144,7 +163,7 @@ export default class LayoutUser extends Vue {
   }
 
   created() {
-    if (this.isBotView) {
+    if (this.isBotView || this.isCommandView) {
       this.$axios
         .$get(`/api/v1/bots?id=${this.$route.params.bot}`)
         .then((msg: BaseMessageInterface) => {

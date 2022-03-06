@@ -7,13 +7,14 @@ export type ContextType = 'command' | 'message'
 export interface Config {
   premium: boolean
   type: ContextType
+  print(...args: any[]): void
 }
 
 export async function defineContext(
   bot: BotInstance,
   code: string,
   config: Config
-) {
+): Promise<any> {
   const factory = new LuaFactory()
   const engine = await factory.createEngine({
     openStandardLibs: false,
@@ -25,6 +26,8 @@ export async function defineContext(
     engine.global.loadLibrary(LuaLibraries.String)
     engine.global.loadLibrary(LuaLibraries.Table)
     engine.global.loadLibrary(LuaLibraries.UTF8)
+
+    engine.global.set('print', config.print)
 
     if (config.premium) {
       engine.global.loadLibrary(LuaLibraries.IO)

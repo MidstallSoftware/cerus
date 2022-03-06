@@ -23,7 +23,10 @@ export default {
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
-  css: [],
+  css: [
+    { src: 'vue-prism-editor/dist/prismeditor.min.css', lang: 'css' },
+    { src: 'prismjs/themes/prism-tomorrow.css', lang: 'css' },
+  ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [],

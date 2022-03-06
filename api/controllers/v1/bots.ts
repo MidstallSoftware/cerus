@@ -56,6 +56,12 @@ async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
       id: cmd.id,
       name: cmd.name,
       premium: cmd.premium === 1,
+      created: (() => {
+        const d = new Date()
+        d.setTime(cmd.created)
+        return d
+      })(),
+      code: cmd.code,
     })),
   }
 }
