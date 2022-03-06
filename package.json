@@ -88,7 +88,7 @@
     "prettier": "^2.5.1",
     "prismjs": "^1.27.0",
     "redis": "^4.0.4",
-    "stripe": "^8.204.0",
+    "stripe": "^8.207.0",
     "stylelint": "^14.1.0",
     "stylelint-config-prettier": "^9.0.3",
     "stylelint-config-recommended-vue": "^1.1.0",
