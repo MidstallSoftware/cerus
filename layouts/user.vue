@@ -43,12 +43,14 @@
               <v-list-item-title v-text="command.name" />
             </a>
           </v-list-item>
-          <v-list-item link class="pl-8">
+          <v-list-item link>
             <a
               :href="'/user/bot/' + $route.params.bot + '/command/@new'"
               class="pl-4 text--primary text-decoration-none"
             >
-              <v-list-item-title>{{ $t('new-command') }}</v-list-item-title>
+              <v-list-item-title
+                ><i>{{ $t('new-command') }}</i></v-list-item-title
+              >
             </a>
           </v-list-item>
 
@@ -64,12 +66,14 @@
                 <v-list-item-title v-text="message.regex" />
               </a>
             </v-list-item>
-            <v-list-item link class="pl-8">
+            <v-list-item link>
               <a
                 :href="'/user/bot' + $route.params.bot + '/message/@new'"
                 class="pl-4 text--primary text-decoration-none"
               >
-                <v-list-item-title>{{ $t('new-message') }}</v-list-item-title>
+                <v-list-item-title
+                  ><i>{{ $t('new-message') }}</i></v-list-item-title
+                >
               </a>
             </v-list-item>
           </div>
