@@ -1,6 +1,8 @@
 export interface APIMessage {
   id: number
   regex: string
+  code: string
+  created: Date
 }
 
 export interface APICommand {

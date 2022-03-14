@@ -54,6 +54,12 @@ async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
     messages: valueMessages.map((msg) => ({
       id: msg.id,
       regex: msg.regex,
+      created: (() => {
+        const d = new Date()
+        d.setTime(msg.created)
+        return d
+      })(),
+      code: msg.code,
     })),
     commands: valueCommands.map((cmd) => ({
       id: cmd.id,

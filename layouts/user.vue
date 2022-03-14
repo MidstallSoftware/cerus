@@ -68,7 +68,7 @@
             </v-list-item>
             <v-list-item link>
               <a
-                :href="'/user/bot' + $route.params.bot + '/message/@new'"
+                :href="'/user/bot/' + $route.params.bot + '/message/@new'"
                 class="pl-4 text--primary text-decoration-none"
               >
                 <v-list-item-title

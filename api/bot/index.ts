@@ -18,7 +18,7 @@ export default class BotInstance {
     })
 
     this.client.on('messageCreate', (msg) => {
-      if (this.entry.premium) {
+      if (this.entry.premium === 1) {
         const hooks = this.entry.messages.filter((hook) =>
           new RegExp(hook.regex).test(msg.content)
         )

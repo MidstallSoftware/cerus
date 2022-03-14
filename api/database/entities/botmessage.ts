@@ -6,6 +6,7 @@ export default class BotMessage extends Model {
   regex!: string
   code!: string
   botId!: number
+  created!: number
   bot!: Bot
 
   static tableName = 'botMessages'

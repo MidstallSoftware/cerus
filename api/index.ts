@@ -11,6 +11,7 @@ import { notFoundHandler, errorHandler } from './middleware/error'
 import genBilling from './routes/v1/billing'
 import genBots from './routes/v1/bots'
 import genCommands from './routes/v1/commands'
+import genMessages from './routes/v1/messages'
 import genInstance from './routes/v1/instance'
 import genUser from './routes/v1/user'
 import genBillingController from './controllers/v1/billing'
@@ -36,6 +37,7 @@ app.use(json())
 app.use('/v1/billing', genBilling())
 app.use('/v1/bots', genBots())
 app.use('/v1/commands', genCommands())
+app.use('/v1/messages', genMessages())
 app.use('/v1/instance', genInstance())
 app.use('/v1/user', genUser())
 app.use(notFoundHandler)
