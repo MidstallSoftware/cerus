@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { validateBody } from '../../middleware/validate'
 import genController from '../../controllers/v1/billing'
+import { validateAuth } from '../../middleware/auth'
 
 export default function (): Router {
   const router = Router()
@@ -8,6 +9,7 @@ export default function (): Router {
 
   router.post(
     '/checkout',
+    validateAuth,
     validateBody({
       type: 'object',
       properties: {
