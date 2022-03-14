@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { validateAuth } from '../../middleware/auth'
-import { validateQuery } from '../../middleware/validate'
+import { validateBody, validateQuery } from '../../middleware/validate'
 import genController from '../../controllers/v1/bots'
 
 export default function (): Router {
@@ -18,6 +18,25 @@ export default function (): Router {
       },
     }),
     controller.create
+  )
+
+  router.patch(
+    '/',
+    validateAuth,
+    validateQuery({
+      type: 'object',
+      properties: {
+        id: { type: 'string', required: true, pattern: /[0-9]+/ },
+      },
+    }),
+    validateBody({
+      type: 'object',
+      minItems: 1,
+      properties: {
+        running: { type: 'boolean' },
+      },
+    }),
+    controller.update
   )
 
   router.get(

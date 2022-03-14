@@ -1,5 +1,5 @@
 import fetch from 'node-fetch'
-import { APIUser } from 'discord-api-types'
+import { APIUser } from 'discord-api-types/v9'
 import User from '../database/entities/user'
 import { createQueryCache } from '../utils'
 

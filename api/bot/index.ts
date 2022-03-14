@@ -1,11 +1,11 @@
-import { Client, CommandInteraction, Message } from 'discord.js'
+import { Client, CommandInteraction, MessageEmbed } from 'discord.js'
+import { REST } from '@discordjs/rest'
+import { codeBlock, SlashCommandBuilder } from '@discordjs/builders'
+import { Routes } from 'discord-api-types/v9'
 import Bot from '../database/entities/bot'
 import BotCall from '../database/entities/botcall'
 import winston from '../providers/winston'
 import { defineContext } from './context'
-
-type MessageHook = (msg: Message) => any
-type CommandHook = (msg: CommandInteraction) => any
 
 export default class BotInstance {
   readonly entry: Bot
@@ -25,33 +25,52 @@ export default class BotInstance {
         for (const hook of hooks) {
           let messages = ''
           let errors = ''
+          let results = ''
           defineContext(this, hook.code, {
             premium: true,
             type: 'message',
+            globals: {
+              message: msg,
+            },
             print(...args: any[]) {
               messages += args.map((v) => v.toString()).join('\t') + '\n'
             },
           })
-            .then((runner: MessageHook) => {
-              let result: any
-              try {
-                result = runner(msg)
-              } catch (e) {
-                errors += e.toString() + '\n'
-              } finally {
-                BotCall.query().insert({
-                  messageId: hook.id,
-                  type: 'message',
-                  dateTime: new Date(),
-                  result: JSON.stringify(result),
-                  errors,
-                  messages,
-                })
-              }
+            .then((result) => {
+              results = JSON.stringify(result)
             })
-            .catch((e) => winston.error(e))
+            .catch((e) => {
+              errors += e.toString() + '\n'
+              winston.error(e)
+              msg.reply({
+                embeds: [
+                  new MessageEmbed()
+                    .setTitle(
+                      `${this.entry.name} - ${hook.regex}: Failed to run`
+                    )
+                    .setColor('RED')
+                    .setDescription(
+                      `Failed to run interaction:\n${codeBlock(e.message)}`
+                    ),
+                ],
+              })
+            })
+            .finally(() => {
+              BotCall.query().insert({
+                messageId: hook.id,
+                type: 'message',
+                dateTime: new Date(),
+                result: results,
+                errors,
+                messages,
+              })
+            })
         }
       }
+    })
+
+    this.client.on('guildCreate', (guild) => {
+      this.setCommands(guild.id)
     })
 
     this.client.on('interactionCreate', (interaction) => {
@@ -64,37 +83,77 @@ export default class BotInstance {
 
         let messages = ''
         let errors = ''
+        let results = ''
 
         defineContext(this, cmd.code, {
           premium: cmd.premium === 1,
           type: 'command',
+          globals: {
+            interaction: inter,
+          },
           print(...args: any[]) {
             messages += args.map((v) => v.toString()).join('\t') + '\n'
           },
         })
-          .then((runner: CommandHook) => {
-            let result: any
-            try {
-              result = runner(inter)
-            } catch (e) {
-              errors += e.toString() + '\n'
-            } finally {
-              BotCall.query().insert({
-                commandId: cmd.id,
-                type: 'command',
-                dateTime: new Date(),
-                result: JSON.stringify(result),
-                errors,
-                messages,
-              })
-            }
+          .then((result) => {
+            results = JSON.stringify(result)
           })
-          .catch((e) => winston.error(e))
+          .catch((e) => {
+            errors += e.toString() + '\n'
+            winston.error(e)
+            inter.reply({
+              embeds: [
+                new MessageEmbed()
+                  .setTitle(`${this.entry.name} - ${cmd.name}: Failed to run`)
+                  .setColor('RED')
+                  .setDescription(
+                    `Failed to run interaction:\n${codeBlock(e.message)}`
+                  ),
+              ],
+            })
+          })
+          .finally(() => {
+            BotCall.query().insert({
+              commandId: cmd.id,
+              type: 'command',
+              dateTime: new Date(),
+              result: results,
+              errors,
+              messages,
+            })
+          })
       }
     })
   }
 
+  private setCommands(guild: string) {
+    const cmds = this.entry.commands.map((cmd) =>
+      new SlashCommandBuilder()
+        .setName(cmd.name)
+        .setDescription('Undescribed')
+        .toJSON()
+    )
+    const rest = new REST({ version: '9' }).setToken(this.entry.token)
+    winston.debug(`Registering commands for ${guild}`)
+    return rest.put(
+      Routes.applicationGuildCommands(this.entry.discordId, guild),
+      { body: cmds }
+    )
+  }
+
+  async updateCommands() {
+    return Promise.all(
+      (await this.client.guilds.fetch()).map((g) => this.setCommands(g.id))
+    )
+  }
+
+  stop() {
+    this.client.destroy()
+  }
+
   async init() {
-    return await this.client.login(this.entry.token)
+    await this.client.login(this.entry.token)
+    this.client.user.setActivity('Hosted by Cerus', { type: 'STREAMING' })
+    await this.updateCommands()
   }
 }

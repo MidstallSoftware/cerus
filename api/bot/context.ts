@@ -7,6 +7,7 @@ export type ContextType = 'command' | 'message'
 export interface Config {
   premium: boolean
   type: ContextType
+  globals?: Record<any, any>
   print(...args: any[]): void
 }
 
@@ -28,6 +29,12 @@ export async function defineContext(
     engine.global.loadLibrary(LuaLibraries.UTF8)
 
     engine.global.set('print', config.print)
+
+    if (typeof config.globals === 'object') {
+      for (const key in config.globals) {
+        engine.global.set(key, config.globals[key])
+      }
+    }
 
     if (config.premium) {
       engine.global.loadLibrary(LuaLibraries.IO)

@@ -1,4 +1,4 @@
-import { APIUser } from 'discord-api-types'
+import { APIUser } from 'discord-api-types/v9'
 import { Client } from 'discord.js'
 import { Model } from 'objection'
 import BotCommand from './botcommand'

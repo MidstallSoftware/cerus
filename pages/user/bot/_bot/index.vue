@@ -1,5 +1,10 @@
 <template>
   <div>
+    <v-row v-if="error != null">
+      <v-col cols="12">
+        <v-alert type="error">{{ error.message }}</v-alert>
+      </v-col>
+    </v-row>
     <v-row>
       <v-col cols="12">
         <v-card id="basic">
@@ -9,7 +14,14 @@
               <fa :icon="['fas', bot.premium ? 'check' : 'xmark']" />
               {{ $t('premium') }}
             </p>
+            <p>
+              <fa :icon="['fas', bot.running ? 'check' : 'xmark']" />
+              {{ $t('running') }}
+            </p>
             <p>{{ $t('created', { value: bot.created }) }}</p>
+            <v-btn @click="startStop">{{
+              $t(bot.running ? 'stop' : 'start')
+            }}</v-btn>
           </v-card-text>
         </v-card>
       </v-col>
@@ -26,9 +38,6 @@
             </ul>
 
             <v-form ref="premiumSignup">
-              <v-alert v-if="error != null" type="error">{{
-                error.message
-              }}</v-alert>
               <v-btn type="submit" @click="premiumSubmit">
                 {{ $t('premium-signup-btn') }}
               </v-btn>
@@ -45,6 +54,9 @@
     "info": "Information",
     "premium": "Premium",
     "created": "Created: {value}",
+    "running": "Running",
+    "start": "Start",
+    "stop": "Stop",
     "premium-signup": "Sign up for Premium",
     "premium-signup-text": "Making your bot a premium bot gives you access to the best features we can provide.",
     "premium-features-heading": "Features",
@@ -69,9 +81,23 @@ export default class PageUserBotSlug extends Vue {
   premiumValid: boolean = false
   error: Error = null
 
+  startStop() {
+    this.error = null
+    this.$axios
+      .$patch(`/api/v1/bots?id=${this.$route.params.bot}`, {
+        running: !this.bot.running,
+      })
+      .then((msg: BaseMessageInterface) => {
+        msg.data.created = new Date(msg.data.created)
+        this.bot = msg.data
+      })
+      .catch((e) => (this.error = e))
+  }
+
   premiumSubmit(e: Event) {
     e.preventDefault()
     if ((this.$refs.premiumSignup as any).validate()) {
+      this.error = null
       this.$axios
         .post(`/api/v1/billing/checkout`, {
           id: parseInt(this.$route.params.bot),

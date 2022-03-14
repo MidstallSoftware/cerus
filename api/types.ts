@@ -18,6 +18,7 @@ export interface APIBot {
   avatar: string
   created: Date
   premium: boolean
+  running: boolean
   messages: APIMessage[]
   commands: APICommand[]
 }
