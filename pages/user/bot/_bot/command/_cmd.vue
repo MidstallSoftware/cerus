@@ -1,15 +1,22 @@
 <template>
   <div>
+    <v-row v-if="error != null">
+      <v-col cols="12">
+        <v-alert type="error">{{ error.message }}</v-alert>
+      </v-col>
+    </v-row>
     <v-row>
       <v-col cols="12">
         <v-card>
           <v-card-title>{{ $t('title') }}</v-card-title>
+          <v-btn color="red" @click="deleteThis">
+            {{ $t('delete') }}
+          </v-btn>
         </v-card>
       </v-col>
     </v-row>
     <v-row>
       <v-col cols="12">
-        <v-alert v-if="error != null" type="error">{{ error.message }}</v-alert>
         <client-only>
           <prism-editor
             ref="editor"
@@ -28,7 +35,8 @@
   "en": {
     "title": "Info",
     "save": "Save",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "delete": "Delete"
   }
 }
 </i18n>
@@ -65,6 +73,18 @@ export default class PageUserBotCommandSlug extends Vue {
         setTimeout(() => this.saveCode(), 30 * 60)
       })
   }, 20 * 60)
+
+  deleteThis() {
+    this.error = null
+    this.$axios
+      .$delete(`/api/v1/commands?id=${this.$route.params.cmd}`)
+      .then(() => {
+        window.location.assign(`/user/bot/${this.$route.params.bot}`)
+      })
+      .catch((e) => {
+        this.error = e
+      })
+  }
 
   highlighter(code: string) {
     return Prism.highlight(code, Prism.languages.lua, 'lua')

@@ -1,4 +1,4 @@
-import { Client, CommandInteraction, MessageEmbed } from 'discord.js'
+import { Client, CommandInteraction, Intents, MessageEmbed } from 'discord.js'
 import { REST } from '@discordjs/rest'
 import { codeBlock, SlashCommandBuilder } from '@discordjs/builders'
 import { Routes } from 'discord-api-types/v9'
@@ -14,7 +14,7 @@ export default class BotInstance {
   constructor(botEntry: Bot) {
     this.entry = botEntry
     this.client = new Client({
-      intents: [],
+      intents: [Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILDS],
     })
 
     this.client.on('messageCreate', (msg) => {

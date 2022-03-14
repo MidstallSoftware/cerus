@@ -22,6 +22,9 @@
             <v-btn @click="startStop">{{
               $t(bot.running ? 'stop' : 'start')
             }}</v-btn>
+            <v-btn color="red" @click="deleteThis">
+              {{ $t('delete') }}
+            </v-btn>
           </v-card-text>
         </v-card>
       </v-col>
@@ -57,6 +60,7 @@
     "running": "Running",
     "start": "Start",
     "stop": "Stop",
+    "delete": "Delete",
     "premium-signup": "Sign up for Premium",
     "premium-signup-text": "Making your bot a premium bot gives you access to the best features we can provide.",
     "premium-features-heading": "Features",
@@ -92,6 +96,18 @@ export default class PageUserBotSlug extends Vue {
         this.bot = msg.data
       })
       .catch((e) => (this.error = e))
+  }
+
+  deleteThis() {
+    this.error = null
+    this.$axios
+      .$delete(`/api/v1/bots?id=${this.$route.params.bot}`)
+      .then(() => {
+        window.location.assign(`/user/`)
+      })
+      .catch((e) => {
+        this.error = e
+      })
   }
 
   premiumSubmit(e: Event) {
