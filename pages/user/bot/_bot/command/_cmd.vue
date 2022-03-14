@@ -15,6 +15,26 @@
         </v-card>
       </v-col>
     </v-row>
+    <v-row v-if="!command.premium">
+      <v-col cols="12">
+        <v-card id="premium">
+          <v-card-title>{{ $t('premium-signup') }}</v-card-title>
+          <v-card-text>
+            <p>{{ $t('premium-signup-text') }}</p>
+            <h2>{{ $t('premium-features-heading') }}</h2>
+            <ul>
+              <li v-for="i in 2" :key="i">{{ $t(`premium-feature${i}`) }}</li>
+            </ul>
+
+            <v-form ref="premiumSignup">
+              <v-btn type="submit" @click="premiumSubmit">
+                {{ $t('premium-signup-btn') }}
+              </v-btn>
+            </v-form>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
     <v-row>
       <v-col cols="12">
         <client-only>
@@ -36,7 +56,13 @@
     "title": "Info",
     "save": "Save",
     "saving": "Saving...",
-    "delete": "Delete"
+    "delete": "Delete",
+    "premium-signup": "Sign up for Premium",
+    "premium-signup-text": "Gives the command access to caching and storing data",
+    "premium-features-heading": "Features",
+    "premium-feature1": "Caching",
+    "premium-feature2": "Database",
+    "premium-signup-btn": "Sign up now"
   }
 }
 </i18n>
@@ -88,6 +114,24 @@ export default class PageUserBotCommandSlug extends Vue {
 
   highlighter(code: string) {
     return Prism.highlight(code, Prism.languages.lua, 'lua')
+  }
+
+  premiumSubmit(e: Event) {
+    e.preventDefault()
+    if ((this.$refs.premiumSignup as any).validate()) {
+      this.error = null
+      this.$axios
+        .post(`/api/v1/billing/checkout`, {
+          id: parseInt(this.$route.params.cmd),
+          type: 'command',
+          lookup_key: 'prem_command',
+          url: window.location.href,
+        })
+        .then((res) => {
+          window.location.assign(res.data.data.url)
+        })
+        .catch((e) => (this.error = e))
+    }
   }
 
   created() {
