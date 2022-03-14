@@ -124,7 +124,7 @@ export default class PageUserBotCommandSlug extends Vue {
         .post(`/api/v1/billing/checkout`, {
           id: parseInt(this.$route.params.cmd),
           type: 'command',
-          lookup_key: 'prem_command',
+          lookup_key: 'cerus_prem_command',
           url: window.location.href,
         })
         .then((res) => {

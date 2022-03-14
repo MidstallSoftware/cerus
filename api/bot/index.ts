@@ -5,6 +5,7 @@ import { Routes } from 'discord-api-types/v9'
 import Bot from '../database/entities/bot'
 import BotCall from '../database/entities/botcall'
 import winston from '../providers/winston'
+import { DI } from '../di'
 import { defineContext } from './context'
 
 export default class BotInstance {
@@ -36,8 +37,16 @@ export default class BotInstance {
               messages += args.map((v) => v.toString()).join('\t') + '\n'
             },
           })
-            .then((result) => {
+            .then(async (result) => {
               results = JSON.stringify(result)
+              await BotCall.query().insert({
+                messageId: hook.id,
+                type: 'message',
+                dateTime: new Date(),
+                result: results,
+                errors,
+                messages,
+              })
             })
             .catch((e) => {
               errors += e.toString() + '\n'
@@ -53,16 +62,6 @@ export default class BotInstance {
                       `Failed to run interaction:\n${codeBlock(e.message)}`
                     ),
                 ],
-              })
-            })
-            .finally(() => {
-              BotCall.query().insert({
-                messageId: hook.id,
-                type: 'message',
-                dateTime: new Date(),
-                result: results,
-                errors,
-                messages,
               })
             })
         }
@@ -95,8 +94,24 @@ export default class BotInstance {
             messages += args.map((v) => v.toString()).join('\t') + '\n'
           },
         })
-          .then((result) => {
+          .then(async (result) => {
             results = JSON.stringify(result)
+            await BotCall.query().insert({
+              commandId: cmd.id,
+              type: 'command',
+              dateTime: new Date(),
+              result: results,
+              errors,
+              messages,
+            })
+            await DI.stripe.subscriptionItems.createUsageRecord(
+              'cerus_prem_command',
+              {
+                quantity: 1,
+                timestamp: Date.now() / 1000,
+                action: 'increment',
+              }
+            )
           })
           .catch((e) => {
             errors += e.toString() + '\n'
@@ -110,16 +125,6 @@ export default class BotInstance {
                     `Failed to run interaction:\n${codeBlock(e.message)}`
                   ),
               ],
-            })
-          })
-          .finally(() => {
-            BotCall.query().insert({
-              commandId: cmd.id,
-              type: 'command',
-              dateTime: new Date(),
-              result: results,
-              errors,
-              messages,
             })
           })
       }

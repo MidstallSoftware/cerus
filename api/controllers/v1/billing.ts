@@ -4,11 +4,13 @@ import { BaseMessage } from '../../message'
 import { DI } from '../../di'
 import Bot from '../../database/entities/bot'
 import BotCommand from '../../database/entities/botcommand'
+import User from '../../database/entities/user'
 
 export default function () {
   return {
     checkout: (req: Request, res: Response, next: NextFunction) => {
       try {
+        const user: User = res.locals.auth.user
         DI.stripe.prices
           .list({
             lookup_keys: [req.body.lookup_key],
@@ -16,6 +18,7 @@ export default function () {
           })
           .then((prices) =>
             DI.stripe.checkout.sessions.create({
+              customer: user.customerId,
               billing_address_collection: 'auto',
               metadata: {
                 type: req.body.type,

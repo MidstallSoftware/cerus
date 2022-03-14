@@ -118,7 +118,7 @@ export default class PageUserBotSlug extends Vue {
         .post(`/api/v1/billing/checkout`, {
           id: parseInt(this.$route.params.bot),
           type: 'bot',
-          lookup_key: 'prem_bot',
+          lookup_key: 'cerus_prem_bot',
           url: window.location.href,
         })
         .then((res) => {

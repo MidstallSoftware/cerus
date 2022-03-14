@@ -90,6 +90,7 @@ export async function init(): Promise<Knex> {
         table.increments('id').primary()
         table.string('discordId').notNullable().unique()
         table.string('email').notNullable()
+        table.string('customerId').notNullable()
         table
           .enum('type', ['default', 'admin'])
           .notNullable()

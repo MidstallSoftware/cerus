@@ -9,6 +9,7 @@ export default class User extends Model {
   created!: number
   accessTokens!: AccessToken[]
   bots!: Bot[]
+  customerId!: string
   type!: 'default' | 'admin'
 
   static tableName = 'users'

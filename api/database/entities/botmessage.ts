@@ -1,5 +1,6 @@
 import { Model } from 'objection'
 import Bot from './bot'
+import BotCall from './botcall'
 
 export default class BotMessage extends Model {
   id!: number
@@ -8,6 +9,7 @@ export default class BotMessage extends Model {
   botId!: number
   created!: number
   bot!: Bot
+  calls!: BotCall[]
 
   static tableName = 'botMessages'
 
@@ -18,6 +20,14 @@ export default class BotMessage extends Model {
       join: {
         from: 'botMessages.botId',
         to: 'bots.id',
+      },
+    },
+    calls: {
+      relation: Model.HasManyRelation,
+      modelClass: BotCall,
+      join: {
+        from: 'botMessages.id',
+        to: 'botCalls.messageId',
       },
     },
   }
