@@ -1,7 +1,7 @@
 import fetch from 'node-fetch'
 import { APIUser } from 'discord-api-types/v9'
 import User from '../database/entities/user'
-import { createQueryCache } from '../utils'
+import { createSingleQueryCache } from '../utils'
 import { DI } from '../di'
 
 export async function checkUser(header: string): Promise<User> {
@@ -13,16 +13,22 @@ export async function checkUser(header: string): Promise<User> {
     })
   ).json()) as APIUser
 
-  const query = await createQueryCache(
+  const query = await createSingleQueryCache(
     User,
-    User.query().where('discordId', self.id)
+    User.query().findOne('discordId', self.id)
   ).read()
-  if (query.length > 0) return query[0]
+  if (typeof query !== 'undefined') return query
 
-  const customer = await DI.stripe.customers.create({
+  const customers = await DI.stripe.customers.list({
     email: self.email,
-    name: `${self.username}#${self.discriminator}`,
   })
+  const customer =
+    customers.data.length === 0
+      ? await DI.stripe.customers.create({
+          email: self.email,
+          name: `${self.username}#${self.discriminator}`,
+        })
+      : customers.data[0]
 
   return await User.query().insertGraphAndFetch({
     discordId: self.id,

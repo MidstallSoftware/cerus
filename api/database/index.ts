@@ -40,7 +40,7 @@ export async function init(): Promise<Knex> {
     {
       accessTokens: (table) => {
         table.increments('id').primary()
-        table.string('token').notNullable()
+        table.string('token').notNullable().unique()
         table.integer('userId').references('users.id').notNullable()
       },
       bots: (table) => {
@@ -59,6 +59,7 @@ export async function init(): Promise<Knex> {
         table.string('result').nullable()
         table.string('errors').nullable()
         table.string('messages').nullable()
+        table.string('callerId').notNullable()
         table.enum('type', ['command', 'message']).notNullable()
         table.dateTime('dateTime').notNullable()
       },
@@ -76,15 +77,6 @@ export async function init(): Promise<Knex> {
         table.integer('botId').references('bots.id').notNullable()
         table.text('code').nullable()
         table.dateTime('created').notNullable()
-      },
-      invoices: (table) => {
-        table.increments('id').primary()
-        table.integer('userId').references('users.id').notNullable()
-        table.integer('totalAmount').defaultTo(0)
-        table.integer('totalCalls').defaultTo(0)
-        table.integer('totalCommands').defaultTo(0)
-        table.date('date').notNullable()
-        table.boolean('paid').defaultTo(false)
       },
       users: (table) => {
         table.increments('id').primary()

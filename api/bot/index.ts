@@ -42,7 +42,8 @@ export default class BotInstance {
               await BotCall.query().insert({
                 messageId: hook.id,
                 type: 'message',
-                dateTime: new Date(),
+                dateTime: Date.now(),
+                callerId: msg.member.id,
                 result: results,
                 errors,
                 messages,
@@ -99,33 +100,53 @@ export default class BotInstance {
             await BotCall.query().insert({
               commandId: cmd.id,
               type: 'command',
-              dateTime: new Date(),
+              dateTime: Date.now(),
+              callerId: inter.member.user.id,
               result: results,
               errors,
               messages,
             })
-            await DI.stripe.subscriptionItems.createUsageRecord(
-              'cerus_prem_command',
-              {
-                quantity: 1,
-                timestamp: Date.now() / 1000,
-                action: 'increment',
-              }
-            )
+            if (cmd.premium === 1) {
+              const subs = await DI.stripe.subscriptions.list({
+                customer: this.entry.owner.customerId,
+              })
+              const sub = subs.data.find(
+                (s) =>
+                  s.items.data[0].price.metadata.type === 'command' &&
+                  s.items.data[0].price.metadata.id === this.entry.id.toString()
+              )
+              await DI.stripe.subscriptionItems.createUsageRecord(
+                sub.items.data[0].id,
+                {
+                  quantity: 1,
+                  timestamp: 'now',
+                  action: 'increment',
+                }
+              )
+            }
           })
           .catch((e) => {
             errors += e.toString() + '\n'
             winston.error(e)
-            inter.reply({
-              embeds: [
-                new MessageEmbed()
-                  .setTitle(`${this.entry.name} - ${cmd.name}: Failed to run`)
-                  .setColor('RED')
-                  .setDescription(
-                    `Failed to run interaction:\n${codeBlock(e.message)}`
-                  ),
-              ],
+            BotCall.query().insert({
+              commandId: cmd.id,
+              type: 'command',
+              dateTime: Date.now(),
+              result: results,
+              errors,
+              messages,
             })
+            if (!inter.replied)
+              inter.reply({
+                embeds: [
+                  new MessageEmbed()
+                    .setTitle(`${this.entry.name} - ${cmd.name}: Failed to run`)
+                    .setColor('RED')
+                    .setDescription(
+                      `Failed to run interaction:\n${codeBlock(e.message)}`
+                    ),
+                ],
+              })
           })
       }
     })

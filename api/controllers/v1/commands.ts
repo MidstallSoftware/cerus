@@ -11,22 +11,57 @@ import {
   sendCachedResponse,
 } from '../../utils'
 import Bot from '../../database/entities/bot'
+import BotCall from '../../database/entities/botcall'
+import { APICommand, APICommandCall, APICommandCallSummary } from '../../types'
 
-const transformCommand = (cmd: BotCommand) => ({
-  id: cmd.id,
-  botId: cmd.botId,
-  name: cmd.name,
-  premium: cmd.premium === 1,
-  code: cmd.code,
-  created: (() => {
-    const d = new Date()
-    d.setTime(cmd.created)
-    return d
-  })(),
-})
+const fixDate = (dt: number) => {
+  const d = new Date()
+  d.setTime(dt)
+  return d
+}
 
-const fetchCommand = async (query: QueryBuilder<BotCommand, BotCommand>) =>
-  transformCommand(await createSingleQueryCache(BotCommand, query).read())
+const transformCall = (call: BotCall) =>
+  ({
+    id: call.id,
+    result: call.result,
+    errors: call.errors,
+    message: call.message,
+    callerId: call.callerId,
+    timestamp: fixDate(call.dateTime),
+  } as APICommandCall)
+
+const transformCommand = (cmd: BotCommand) =>
+  ({
+    id: cmd.id,
+    botId: cmd.botId,
+    name: cmd.name,
+    premium: cmd.premium === 1,
+    code: cmd.code,
+    calls:
+      typeof cmd.calls === 'undefined'
+        ? []
+        : cmd.premium === 1
+        ? cmd.calls.map(transformCall)
+        : ({
+            thisMonth: cmd.calls.filter(
+              (c) => fixDate(c.dateTime).getMonth() === new Date().getMonth()
+            ).length,
+            thisYear: cmd.calls.filter(
+              (c) =>
+                fixDate(c.dateTime).getFullYear() === new Date().getFullYear()
+            ).length,
+            lifetime: cmd.calls.length,
+          } as APICommandCallSummary),
+    created: fixDate(cmd.created),
+  } as APICommand)
+
+const fetchCommand = async (query: QueryBuilder<BotCommand, BotCommand>) => {
+  const value = await createSingleQueryCache(
+    BotCommand,
+    query.withGraphFetched('calls')
+  ).read()
+  return transformCommand(value)
+}
 
 export default function () {
   return {

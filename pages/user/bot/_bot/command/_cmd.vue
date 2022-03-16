@@ -9,32 +9,63 @@
       <v-col cols="12">
         <v-card>
           <v-card-title>{{ $t('title') }}</v-card-title>
+          <p v-if="!command.premium">{{ $t('calls', command.calls) }}</p>
           <v-btn color="red" @click="deleteThis">
             {{ $t('delete') }}
           </v-btn>
         </v-card>
       </v-col>
     </v-row>
-    <v-row v-if="!command.premium">
-      <v-col cols="12">
-        <v-card id="premium">
-          <v-card-title>{{ $t('premium-signup') }}</v-card-title>
-          <v-card-text>
-            <p>{{ $t('premium-signup-text') }}</p>
-            <h2>{{ $t('premium-features-heading') }}</h2>
-            <ul>
-              <li v-for="i in 2" :key="i">{{ $t(`premium-feature${i}`) }}</li>
-            </ul>
+    <div v-if="command.premium">
+      <v-row>
+        <v-col cols="12">
+          <v-card class="mx-auto">
+            <v-card-title>{{ $t('analytics') }}</v-card-title>
+            <v-card-text>
+              <v-sheet color="rgba(0, 0, 0, .12)">
+                <v-sparkline
+                  :value="Object.values(analyticsData)"
+                  type="trend"
+                  color="rgb(255, 255, 255, .7)"
+                  height="25"
+                  label-size="3"
+                  padding="13"
+                  :labels="Object.keys(analyticsData)"
+                  line-width="1"
+                  smooth
+                >
+                  <template #label="item">
+                    {{ item.value }}
+                  </template>
+                </v-sparkline>
+              </v-sheet>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+    </div>
+    <div v-else>
+      <v-row>
+        <v-col cols="12">
+          <v-card id="premium">
+            <v-card-title>{{ $t('premium-signup') }}</v-card-title>
+            <v-card-text>
+              <p>{{ $t('premium-signup-text') }}</p>
+              <h2>{{ $t('premium-features-heading') }}</h2>
+              <ul>
+                <li v-for="i in 3" :key="i">{{ $t(`premium-feature${i}`) }}</li>
+              </ul>
 
-            <v-form ref="premiumSignup">
-              <v-btn type="submit" @click="premiumSubmit">
-                {{ $t('premium-signup-btn') }}
-              </v-btn>
-            </v-form>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+              <v-form ref="premiumSignup">
+                <v-btn type="submit" @click="premiumSubmit">
+                  {{ $t('premium-signup-btn') }}
+                </v-btn>
+              </v-form>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+    </div>
     <v-row>
       <v-col cols="12">
         <client-only>
@@ -57,23 +88,27 @@
     "save": "Save",
     "saving": "Saving...",
     "delete": "Delete",
+    "analytics": "Analytics",
+    "calls": "# of interactions... this month: {thisMonth}, this year: {thisYear}, in forever: {lifetime}",
     "premium-signup": "Sign up for Premium",
     "premium-signup-text": "Gives the command access to caching and storing data",
     "premium-features-heading": "Features",
     "premium-feature1": "Caching",
     "premium-feature2": "Database",
+    "premium-feature3": "Analytics",
     "premium-signup-btn": "Sign up now"
   }
 }
 </i18n>
 <script lang="ts">
+import { add, compareAsc, formatISO, parseISO } from 'date-fns'
 import _ from 'lodash'
 import Prism from 'prismjs'
 import 'prismjs/components/prism-lua'
 import { PrismEditor } from 'vue-prism-editor'
 import { Vue, Component } from 'vue-property-decorator'
 import { BaseMessageInterface } from '~/api/message'
-import { APICommand } from '~/api/types'
+import { APICommand, APICommandCall } from '~/api/types'
 
 @Component({
   components: {
@@ -83,7 +118,7 @@ import { APICommand } from '~/api/types'
   layout: 'user',
 })
 export default class PageUserBotCommandSlug extends Vue {
-  command: APICommand = { code: '' } as APICommand
+  command: APICommand = { code: '', calls: [] } as APICommand
   saving: boolean = false
   error: Error = null
   saveCode = _.throttle(() => {
@@ -99,6 +134,45 @@ export default class PageUserBotCommandSlug extends Vue {
         setTimeout(() => this.saveCode(), 30 * 60)
       })
   }, 20 * 60)
+
+  get analyticsData(): Record<string, number> {
+    if (this.command.premium) {
+      const data: Record<string, APICommandCall[]> = {}
+      for (const entry of this.command.calls as APICommandCall[]) {
+        const key = formatISO(entry.timestamp, { representation: 'date' })
+        if (typeof data[key] === 'undefined') {
+          data[key] = [entry]
+        } else {
+          data[key].push(entry)
+        }
+      }
+
+      for (let i = 0; i < 7; i++) {
+        const key = formatISO(add(new Date(), { days: -i }), {
+          representation: 'date',
+        })
+        if (!(key in data)) data[key] = []
+      }
+
+      const unordered = Object.entries(data).reduce(
+        (obj, item) => ({
+          ...obj,
+          [item[0]]: item[1].length,
+        }),
+        {}
+      ) as Record<string, number>
+      return Object.keys(unordered)
+        .sort((a, b) => compareAsc(parseISO(a), parseISO(b)))
+        .reduce(
+          (obj, key) => ({
+            ...obj,
+            [key]: unordered[key],
+          }),
+          {}
+        )
+    }
+    return {}
+  }
 
   deleteThis() {
     this.error = null
@@ -138,6 +212,11 @@ export default class PageUserBotCommandSlug extends Vue {
     this.$axios
       .$get(`/api/v1/commands?id=${this.$route.params.cmd}`)
       .then((msg: BaseMessageInterface) => {
+        if (msg.data.premium)
+          msg.data.calls = msg.data.calls.map((call: APICommandCall) => {
+            call.timestamp = new Date(call.timestamp)
+            return call
+          })
         this.command = msg.data
       })
       .catch((e) =>

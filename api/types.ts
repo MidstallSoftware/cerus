@@ -1,3 +1,18 @@
+export interface APICommandCallSummary {
+  thisMonth: number
+  thisYear: number
+  lifetime: number
+  result: string
+  errors: string
+  messages: string
+}
+
+export interface APICommandCall {
+  id: number
+  callerId: string
+  timestamp: Date
+}
+
 export interface APIMessage {
   id: number
   regex: string
@@ -9,6 +24,7 @@ export interface APICommand {
   id: number
   name: string
   premium: boolean
+  calls: APICommandCallSummary | APICommandCall[]
   created: Date
   code: string
 }

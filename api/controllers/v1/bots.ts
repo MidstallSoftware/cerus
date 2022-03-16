@@ -65,6 +65,7 @@ async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
       id: cmd.id,
       name: cmd.name,
       premium: cmd.premium === 1,
+      calls: [],
       created: (() => {
         const d = new Date()
         d.setTime(cmd.created)
@@ -111,6 +112,7 @@ export default function () {
               const valueCommands = await cacheCommands.read()
               bot.messages = valueMessages
               bot.commands = valueCommands
+              bot.owner = user
               const inst = new BotInstance(bot)
               await inst.init()
               DI.bots.set(id, inst)
