@@ -43,6 +43,7 @@ services:
       - './components:/usr/src/server/components'
       - './layouts:/usr/src/server/layouts'
       - './pages:/usr/src/server/pages'
+      - './plugins:/usr/src/server/plugins'
       - './static:/usr/src/server/static'
       - './store:/usr/src/server/store'
       - type: bind

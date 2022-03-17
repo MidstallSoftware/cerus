@@ -27,7 +27,7 @@
               <v-btn @click="downloadAnalytics">
                 {{ $t('download') }}
               </v-btn>
-              <analytics :value.sync="analyticsData" :view="analyticsView" />
+              <analytics :get-analytics="() => command.calls" />
             </v-card-text>
           </v-card>
         </v-col>
@@ -91,7 +91,6 @@
 }
 </i18n>
 <script lang="ts">
-import { sub, compareAsc, parse, set, format } from 'date-fns'
 import downloadFile from 'js-file-download'
 import _ from 'lodash'
 import Prism from 'prismjs'
@@ -109,7 +108,6 @@ import { APICommand, APICommandCall } from '~/api/types'
   layout: 'user',
 })
 export default class PageUserBotCommandSlug extends Vue {
-  analyticsView: string = 'WEEK'
   command: APICommand = { code: '', calls: [] } as APICommand
   saving: boolean = false
   error: Error = null
@@ -140,106 +138,6 @@ export default class PageUserBotCommandSlug extends Vue {
         )
       )
       .catch((e) => (this.error = e))
-  }
-
-  analyticsData(view: string): Record<string, number> {
-    if (this.command.premium) {
-      const data: Record<string, APICommandCall[]> = {}
-      const obj = {
-        day: {
-          format: 'HH:00',
-          start: set(
-            sub(new Date(), {
-              days: 1,
-            }),
-            {
-              hours: 23,
-              minutes: 59,
-              seconds: 59,
-              milliseconds: 59,
-            }
-          ),
-        },
-        week: {
-          format: 'yyyy-MM-dd',
-          start: set(
-            sub(new Date(), {
-              days: 7,
-            }),
-            {
-              hours: 0,
-              minutes: 0,
-              seconds: 0,
-              milliseconds: 0,
-            }
-          ),
-        },
-        month: {
-          format: 'yyyy-MM',
-          start: set(
-            sub(new Date(), {
-              weeks: 4,
-            }),
-            {
-              hours: 0,
-              minutes: 0,
-              seconds: 0,
-              milliseconds: 0,
-            }
-          ),
-        },
-        year: {
-          format: 'yyyy',
-          start: set(
-            sub(new Date(), {
-              months: 12,
-            }),
-            {
-              hours: 0,
-              minutes: 0,
-              seconds: 0,
-              milliseconds: 0,
-            }
-          ),
-        },
-      }[view.toLowerCase()]
-
-      const calls = (this.command.calls as APICommandCall[]).filter(
-        (v) => compareAsc(v.timestamp, obj.start) !== -1
-      )
-
-      for (const entry of calls) {
-        const key = format(entry.timestamp, obj.format)
-        if (typeof data[key] === 'undefined') {
-          data[key] = [entry]
-        } else {
-          data[key].push(entry)
-        }
-      }
-
-      const unordered = Object.entries(data).reduce(
-        (obj, item) => ({
-          ...obj,
-          [item[0]]: item[1].length,
-        }),
-        {}
-      ) as Record<string, number>
-      return Object.keys(unordered)
-        .sort((a, b) =>
-          compareAsc(
-            parse(a, obj.format, new Date()),
-            parse(b, obj.format, new Date())
-          )
-        )
-        .reduce(
-          (obj, key) => ({
-            ...obj,
-            [key]: unordered[key],
-          }),
-          {}
-        )
-    }
-    return {}
   }
 
   deleteThis() {

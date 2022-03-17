@@ -2,38 +2,24 @@
   <div>
     <v-toolbar>
       <v-btn
-        v-for="v in analyticsViews"
+        v-for="v in views"
         :key="v"
-        :color="makeColor(v)"
+        :color="makeColor(string2view(v))"
         depressed
-        @click="changeView(v)"
+        @click="view = string2view(v)"
       >
-        {{ $t(`view.${v.toLowerCase()}`) }}
+        {{ $t(`view.${v.toLocaleLowerCase()}`) }}
       </v-btn>
     </v-toolbar>
     <v-tabs-items v-model="viewIndex">
-      <v-tab-item v-for="v in analyticsViews" :key="v">
+      <v-tab-item v-for="v in views" :key="v">
         <v-sheet color="rgba(0, 0, 0, .12)">
-          <v-sparkline
-            :value="Object.values(analyticsData(v))"
-            type="trend"
-            color="rgb(255, 255, 255, .7)"
-            height="25"
-            label-size="3"
-            padding="13"
-            :labels="Object.keys(analyticsData(v))"
-            line-width="1"
-            smooth
-          >
-            <template #label="item">
-              {{
-                item.value +
-                (analyticsData(v)[item.value] > 0
-                  ? ` (${analyticsData(v)[item.value]})`
-                  : '')
-              }}
-            </template>
-          </v-sparkline>
+          <apex-chart
+            type="heatmap"
+            height="350"
+            :series="getSeries(string2view(v))"
+            :options="getChartOptions(string2view(v))"
+          />
         </v-sheet>
       </v-tab-item>
     </v-tabs-items>
@@ -50,36 +36,153 @@
 }
 </i18n>
 <script lang="ts">
-import { Component, Prop, VModel, Model, Vue } from 'vue-property-decorator'
+import { Component, Prop, Vue } from 'vue-property-decorator'
+import {
+  compareAsc,
+  endOfMonth,
+  endOfWeek,
+  endOfYear,
+  format,
+  set,
+  startOfMonth,
+  startOfWeek,
+  startOfYear,
+} from 'date-fns'
+import { APICommandCall } from '~/api/types'
 
-export enum AnalyticsView {
-  DAY = 'day',
+enum ViewType {
   WEEK = 'week',
   MONTH = 'month',
   YEAR = 'year',
 }
 
-export type GenData = (view: AnalyticsView) => Record<string, number>
+type GetAnalytics = (view: ViewType) => APICommandCall[]
+const GetAnalyticsDefault: GetAnalytics = () => []
 
 @Component
 export default class Analytics extends Vue {
-  @Prop({
-    default: AnalyticsView.WEEK,
-  })
-  @Model('update:view')
-  view: AnalyticsView
+  @Prop({ default: 0 }) viewIndex: number
+  @Prop({ default: GetAnalyticsDefault }) getAnalytics: GetAnalytics
 
-  viewIndex: number = 1
-  analyticsViews = Object.keys(AnalyticsView).filter((v) => isNaN(parseInt(v)))
-  @VModel() analyticsData: GenData
-
-  changeView(view: AnalyticsView) {
-    this.view = view
-    this.viewIndex = this.analyticsViews.findIndex((v) => v === view)
+  get series() {
+    return this.getSeries(this.view)
   }
 
-  makeColor(view: AnalyticsView) {
+  get view() {
+    return Object.values(ViewType)[this.viewIndex]
+  }
+
+  set view(view: ViewType) {
+    this.viewIndex = this.view2index(view)
+  }
+
+  string2view(str: string): ViewType {
+    return Object.values(ViewType)[this.views.findIndex((v) => v === str)]
+  }
+
+  view2index(view: ViewType) {
+    return Object.values(ViewType).findIndex((v) => v === view.toLowerCase())
+  }
+
+  getSeries(view: ViewType): object[] {
+    const now = new Date()
+    const data = this.getAnalytics(view).filter((entry) => {
+      switch (view) {
+        case ViewType.WEEK:
+          return (
+            compareAsc(startOfWeek(now), entry.timestamp) === -1 &&
+            compareAsc(endOfWeek(now), entry.timestamp) === 1
+          )
+        case ViewType.MONTH:
+          return (
+            compareAsc(startOfMonth(now), entry.timestamp) === -1 &&
+            compareAsc(endOfMonth(now), entry.timestamp) === 1
+          )
+        case ViewType.YEAR:
+          return (
+            compareAsc(startOfYear(now), entry.timestamp) === -1 &&
+            compareAsc(endOfYear(now), entry.timestamp) === 1
+          )
+      }
+      return false
+    })
+
+    switch (view) {
+      case ViewType.WEEK:
+        return new Array(7)
+          .fill(0)
+          .map((_value, i) => format(set(now, { date: i }), 'EEEE'))
+          .reverse()
+          .map((name, i) => ({
+            name,
+            data: data
+              .filter(({ timestamp }) => timestamp.getDay() === i)
+              .map((entry) => [entry.timestamp, entry.id]),
+          }))
+      case ViewType.MONTH:
+        return new Array(4)
+          .fill(0)
+          .map((_value, i) => i + 1)
+          .reverse()
+          .map((name, i) => ({
+            name,
+            data: data
+              .filter(({ timestamp }) => timestamp.getMonth() === i)
+              .map((entry) => [entry.timestamp, entry.id]),
+          }))
+      case ViewType.YEAR:
+        return new Array(12)
+          .fill(0)
+          .map((_value, i) => format(set(now, { month: i }), 'LLLL'))
+          .reverse()
+          .map((name, i) => ({
+            name,
+            data: data
+              .filter(({ timestamp }) => timestamp.getMonth() === i)
+              .map((entry) => [entry.timestamp, entry.id]),
+          }))
+    }
+  }
+
+  makeColor(view: ViewType) {
     return this.view === view ? 'secondary' : 'normal'
+  }
+
+  get views() {
+    return Object.keys(ViewType).filter((v) => isNaN(parseInt(v)))
+  }
+
+  getChartOptions(view: ViewType) {
+    const format = { week: 'HH:mm', month: 'dd', year: 'MMM dd' }[
+      view.toLowerCase()
+    ]
+    return {
+      chart: {
+        height: 350,
+        type: 'heatmap',
+      },
+      xaxis: {
+        type: 'datetime',
+        labels: {
+          format,
+        },
+      },
+      toolbar: {
+        show: false,
+      },
+      colors: Object.keys(this.$vuetify.theme.currentTheme),
+      tooltip: {
+        x: {
+          format,
+        },
+        y: {
+          format,
+        },
+      },
+      dataLabels: {
+        enabled: false,
+      },
+    }
   }
 }
 </script>

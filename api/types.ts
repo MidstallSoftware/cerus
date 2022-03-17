@@ -1,3 +1,8 @@
+export interface APIObject {
+  id: number
+  created: Date
+}
+
 export interface APICommandCallSummary {
   thisMonth: number
   thisYear: number
@@ -13,29 +18,23 @@ export interface APICommandCall {
   timestamp: Date
 }
 
-export interface APIMessage {
-  id: number
+export interface APIMessage extends APIObject {
   regex: string
   code: string
-  created: Date
 }
 
-export interface APICommand {
-  id: number
+export interface APICommand extends APIObject {
   botId: number
   name: string
   premium: boolean
   calls: APICommandCallSummary | APICommandCall[]
-  created: Date
   code: string
 }
 
-export interface APIBot {
-  id: number
+export interface APIBot extends APIObject {
   name: string
   discordId: string
   avatar: string
-  created: Date
   premium: boolean
   running: boolean
   messages: APIMessage[]
