@@ -22,6 +22,7 @@ export interface APIMessage {
 
 export interface APICommand {
   id: number
+  botId: number
   name: string
   premium: boolean
   calls: APICommandCallSummary | APICommandCall[]

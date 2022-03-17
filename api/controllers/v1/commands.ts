@@ -1,3 +1,4 @@
+import ExcelJS from 'exceljs'
 import { NextFunction, Request, Response } from 'express'
 import { PartialModelObject, QueryBuilder } from 'objection'
 import { HttpUnauthorizedError } from '../../exceptions'
@@ -65,6 +66,112 @@ const fetchCommand = async (query: QueryBuilder<BotCommand, BotCommand>) => {
 
 export default function () {
   return {
+    export: (req: Request, res: Response, next: NextFunction) => {
+      try {
+        if (!res.locals.auth && !res.locals.auth.user)
+          throw new HttpUnauthorizedError('User is not authenticated')
+
+        const run = async () => {
+          const command = await fetchCommand(
+            BotCommand.query().findById(parseInt(req.query.id.toString()))
+          )
+
+          if (!command.premium)
+            throw new Error('Premium access is required to export analytics')
+
+          const workbook = new ExcelJS.Workbook()
+          workbook.creator = 'Cerus'
+          workbook.created = new Date()
+
+          const sheet = workbook.addWorksheet('Stats', {
+            headerFooter: {
+              firstHeader: `Cerus Command #${command.id} (${command.botId}) - ${command.name}`,
+            },
+          })
+
+          sheet.columns = [
+            { header: 'ID', key: 'id', width: 10, font: { bold: true } },
+            {
+              header: 'Caller ID',
+              key: 'caller',
+              width: 25,
+              font: { bold: true },
+            },
+            {
+              header: 'Timestamp',
+              key: 'timestamp',
+              width: 20,
+              style: {
+                numFmt: 'yyyy-mm-dd hh:mm:ss',
+              },
+              font: { bold: true },
+            },
+          ]
+
+          for (const call of command.calls as APICommandCall[]) {
+            sheet.addRow({
+              id: call.id,
+              caller: call.callerId,
+              timestamp: call.timestamp,
+            })
+          }
+
+          const nextRow = sheet.lastRow.number + 1
+
+          sheet.getCell(`A${nextRow}`).value = 'Total Calls'
+          sheet.getCell(`A${nextRow}`).style = {
+            font: {
+              bold: true,
+            },
+          }
+          sheet.getCell(`B${nextRow}`).value = {
+            formula: `COUNT(A2:A${nextRow - 2})`,
+            result: (command.calls as APICommandCall[]).length,
+          } as ExcelJS.CellValue
+
+          sheet.getCell(`C${nextRow}`).value = 'Cost Per Call'
+          sheet.getCell(`C${nextRow}`).style = {
+            font: {
+              bold: true,
+            },
+          }
+          sheet.getCell(`D${nextRow}`).value = '0.05'
+          sheet.getCell(`D${nextRow}`).style = {
+            numFmt: '$0.00',
+          }
+
+          sheet.getCell(`E${nextRow}`).value = 'Total Cost'
+          sheet.getCell(`E${nextRow}`).style = {
+            font: {
+              bold: true,
+            },
+          }
+
+          sheet.getCell(`F${nextRow}`).value = {
+            formula: `B${nextRow} * D${nextRow}`,
+            result: (command.calls as APICommandCall[]).length * 0.05,
+          } as ExcelJS.CellValue
+          sheet.getCell(`F${nextRow}`).style = {
+            numFmt: '$0.00',
+          }
+
+          res.setHeader(
+            'Content-Type',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          )
+          res.setHeader(
+            'Content-Disposition',
+            `attachment; filename=cerus-${command.botId}-${command.id}.xlsx`
+          )
+
+          await workbook.xlsx.write(res)
+          res.end()
+        }
+        run().catch((e) => next(e))
+      } catch (e) {
+        next(e)
+      }
+    },
     create: (req: Request, res: Response, next: NextFunction) => {
       try {
         if (!res.locals.auth && !res.locals.auth.user)

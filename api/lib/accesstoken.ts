@@ -1,12 +1,8 @@
 import AccessToken from '../database/entities/accesstoken'
-import { createQueryCache } from '../utils'
 import { checkUser } from './user'
 
 export async function checkAccessToken(header: string): Promise<AccessToken> {
-  const query = await createQueryCache(
-    AccessToken,
-    AccessToken.query().where('token', header).orderBy('id')
-  ).read()
+  const query = await AccessToken.query().where('token', header).orderBy('id')
   const user = await checkUser(header)
   if (query.length > 0) {
     query[0].user = user

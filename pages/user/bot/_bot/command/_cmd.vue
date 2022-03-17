@@ -9,10 +9,12 @@
       <v-col cols="12">
         <v-card>
           <v-card-title>{{ $t('title') }}</v-card-title>
-          <p v-if="!command.premium">{{ $t('calls', command.calls) }}</p>
-          <v-btn color="red" @click="deleteThis">
-            {{ $t('delete') }}
-          </v-btn>
+          <v-card-text>
+            <p v-if="!command.premium">{{ $t('calls', command.calls) }}</p>
+            <v-btn color="red" @click="deleteThis">
+              {{ $t('delete') }}
+            </v-btn>
+          </v-card-text>
         </v-card>
       </v-col>
     </v-row>
@@ -22,23 +24,10 @@
           <v-card class="mx-auto">
             <v-card-title>{{ $t('analytics') }}</v-card-title>
             <v-card-text>
-              <v-sheet color="rgba(0, 0, 0, .12)">
-                <v-sparkline
-                  :value="Object.values(analyticsData)"
-                  type="trend"
-                  color="rgb(255, 255, 255, .7)"
-                  height="25"
-                  label-size="3"
-                  padding="13"
-                  :labels="Object.keys(analyticsData)"
-                  line-width="1"
-                  smooth
-                >
-                  <template #label="item">
-                    {{ item.value }}
-                  </template>
-                </v-sparkline>
-              </v-sheet>
+              <v-btn @click="downloadAnalytics">
+                {{ $t('download') }}
+              </v-btn>
+              <analytics :value.sync="analyticsData" :view="analyticsView" />
             </v-card-text>
           </v-card>
         </v-col>
@@ -89,6 +78,7 @@
     "saving": "Saving...",
     "delete": "Delete",
     "analytics": "Analytics",
+    "download": "Export to Excel",
     "calls": "# of interactions... this month: {thisMonth}, this year: {thisYear}, in forever: {lifetime}",
     "premium-signup": "Sign up for Premium",
     "premium-signup-text": "Gives the command access to caching and storing data",
@@ -101,7 +91,8 @@
 }
 </i18n>
 <script lang="ts">
-import { add, compareAsc, formatISO, parseISO } from 'date-fns'
+import { sub, compareAsc, parse, set, format } from 'date-fns'
+import downloadFile from 'js-file-download'
 import _ from 'lodash'
 import Prism from 'prismjs'
 import 'prismjs/components/prism-lua'
@@ -118,6 +109,7 @@ import { APICommand, APICommandCall } from '~/api/types'
   layout: 'user',
 })
 export default class PageUserBotCommandSlug extends Vue {
+  analyticsView: string = 'WEEK'
   command: APICommand = { code: '', calls: [] } as APICommand
   saving: boolean = false
   error: Error = null
@@ -135,23 +127,94 @@ export default class PageUserBotCommandSlug extends Vue {
       })
   }, 20 * 60)
 
-  get analyticsData(): Record<string, number> {
+  downloadAnalytics() {
+    this.error = null
+    this.$axios
+      .$get(`/api/v1/commands/export?id=${this.$route.params.cmd}`, {
+        responseType: 'blob',
+      })
+      .then((res) =>
+        downloadFile(
+          res,
+          `cerus-${this.$route.params.bot}-${this.$route.params.cmd}.xlsx`
+        )
+      )
+      .catch((e) => (this.error = e))
+  }
+
+  analyticsData(view: string): Record<string, number> {
     if (this.command.premium) {
       const data: Record<string, APICommandCall[]> = {}
-      for (const entry of this.command.calls as APICommandCall[]) {
-        const key = formatISO(entry.timestamp, { representation: 'date' })
+      const obj = {
+        day: {
+          format: 'HH:00',
+          start: set(
+            sub(new Date(), {
+              days: 1,
+            }),
+            {
+              hours: 23,
+              minutes: 59,
+              seconds: 59,
+              milliseconds: 59,
+            }
+          ),
+        },
+        week: {
+          format: 'yyyy-MM-dd',
+          start: set(
+            sub(new Date(), {
+              days: 7,
+            }),
+            {
+              hours: 0,
+              minutes: 0,
+              seconds: 0,
+              milliseconds: 0,
+            }
+          ),
+        },
+        month: {
+          format: 'yyyy-MM',
+          start: set(
+            sub(new Date(), {
+              weeks: 4,
+            }),
+            {
+              hours: 0,
+              minutes: 0,
+              seconds: 0,
+              milliseconds: 0,
+            }
+          ),
+        },
+        year: {
+          format: 'yyyy',
+          start: set(
+            sub(new Date(), {
+              months: 12,
+            }),
+            {
+              hours: 0,
+              minutes: 0,
+              seconds: 0,
+              milliseconds: 0,
+            }
+          ),
+        },
+      }[view.toLowerCase()]
+
+      const calls = (this.command.calls as APICommandCall[]).filter(
+        (v) => compareAsc(v.timestamp, obj.start) !== -1
+      )
+
+      for (const entry of calls) {
+        const key = format(entry.timestamp, obj.format)
         if (typeof data[key] === 'undefined') {
           data[key] = [entry]
         } else {
           data[key].push(entry)
         }
-      }
-
-      for (let i = 0; i < 7; i++) {
-        const key = formatISO(add(new Date(), { days: -i }), {
-          representation: 'date',
-        })
-        if (!(key in data)) data[key] = []
       }
 
       const unordered = Object.entries(data).reduce(
@@ -162,7 +225,12 @@ export default class PageUserBotCommandSlug extends Vue {
         {}
       ) as Record<string, number>
       return Object.keys(unordered)
-        .sort((a, b) => compareAsc(parseISO(a), parseISO(b)))
+        .sort((a, b) =>
+          compareAsc(
+            parse(a, obj.format, new Date()),
+            parse(b, obj.format, new Date())
+          )
+        )
         .reduce(
           (obj, key) => ({
             ...obj,
@@ -218,6 +286,7 @@ export default class PageUserBotCommandSlug extends Vue {
             return call
           })
         this.command = msg.data
+        this.$forceUpdate()
       })
       .catch((e) =>
         this.$nuxt.error({

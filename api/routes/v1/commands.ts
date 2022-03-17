@@ -7,6 +7,18 @@ export default function (): Router {
   const router = Router()
   const controller = genController()
 
+  router.get(
+    '/export',
+    validateAuth,
+    validateQuery({
+      type: 'object',
+      properties: {
+        id: { type: 'string', required: true, pattern: /[0-9]+/ },
+      },
+    }),
+    controller.export
+  )
+
   router.post(
     '/',
     validateAuth,

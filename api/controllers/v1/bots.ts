@@ -64,6 +64,7 @@ async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
     commands: valueCommands.map((cmd) => ({
       id: cmd.id,
       name: cmd.name,
+      botId: cmd.botId,
       premium: cmd.premium === 1,
       calls: [],
       created: (() => {
