@@ -88,7 +88,7 @@
     "knex": "^1.0.3",
     "lint-staged": "^12.1.2",
     "lodash": "^4.17.21",
-    "mariadb": "^2.5.6",
+    "mariadb": "^3.0.0",
     "mysql2": "^2.3.3",
     "node-fetch": "^3.2.0",
     "objection": "^3.0.1",
