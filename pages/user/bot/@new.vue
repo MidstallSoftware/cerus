@@ -39,6 +39,11 @@
 import { Vue, Component } from 'vue-property-decorator'
 
 @Component({
+  head() {
+    return {
+      title: this.$t('title').toString(),
+    }
+  },
   middleware: 'auth',
   layout: 'user',
 })

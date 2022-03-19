@@ -12,6 +12,7 @@
 <i18n>
 {
   "en": {
+    "page-title": "New Message Hook",
     "submit": "Submit"
   }
 }
@@ -20,6 +21,11 @@
 import { Component, Vue } from 'vue-property-decorator'
 
 @Component({
+  head() {
+    return {
+      title: this.$t('page-title').toString(),
+    }
+  },
   middleware: 'auth',
   layout: 'user',
 })

@@ -33,6 +33,7 @@
 <i18n>
 {
   "en": {
+    "page-title": "{messageName} - {botName}",
     "title": "Info",
     "save": "Save",
     "saving": "Saving...",
@@ -47,9 +48,17 @@ import 'prismjs/components/prism-lua'
 import { PrismEditor } from 'vue-prism-editor'
 import { Vue, Component } from 'vue-property-decorator'
 import { BaseMessageInterface } from '~/api/message'
-import { APIMessage } from '~/api/types'
+import { APIBot, APIMessage } from '~/api/types'
 
 @Component({
+  head() {
+    return {
+      title: this.$t('page-title', {
+        messageName: (this as PageUserBotCommandSlug).message.regex,
+        botName: (this as PageUserBotCommandSlug).bot.name,
+      }).toString(),
+    }
+  },
   components: {
     PrismEditor,
   },
@@ -58,6 +67,7 @@ import { APIMessage } from '~/api/types'
 })
 export default class PageUserBotCommandSlug extends Vue {
   message: APIMessage = { code: '' } as unknown as APIMessage
+  bot: APIBot = { premium: false } as APIBot
   saving: boolean = false
   error: Error = null
   saveCode = _.throttle(() => {
@@ -95,6 +105,19 @@ export default class PageUserBotCommandSlug extends Vue {
       .$get(`/api/v1/messages?id=${this.$route.params.msg}`)
       .then((msg: BaseMessageInterface) => {
         this.message = msg.data
+      })
+      .catch((e) =>
+        this.$nuxt.error({
+          statusCode: 501,
+          message: e.message,
+        })
+      )
+
+    this.$axios
+      .$get(`/api/v1/bots?id=${this.$route.params.bot}`)
+      .then((msg: BaseMessageInterface) => {
+        msg.data.created = new Date(msg.data.created)
+        this.bot = msg.data
       })
       .catch((e) =>
         this.$nuxt.error({

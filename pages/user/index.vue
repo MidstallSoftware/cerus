@@ -12,7 +12,8 @@
 <i18n>
 {
   "en": {
-    "loading": "Loading... please wait"
+    "loading": "Loading... please wait",
+    "page-title": "User"
   }
 }
 </i18n>
@@ -24,9 +25,19 @@ interface UserInfo {}
 @Component({
   middleware: 'auth',
   layout: 'user',
-  head: {
-    title: 'User',
-    meta: [{ hid: 'og:title', name: 'og:title', content: 'User - Cerus' }],
+  head() {
+    return {
+      title: this.$t('page-title').toString(),
+      meta: [
+        {
+          hid: 'og:title',
+          name: 'og:title',
+          content: this.$t('full-title', {
+            page: this.$t('page-title'),
+          }).toString(),
+        },
+      ],
+    }
   },
 })
 export default class PageUserIndex extends Vue {

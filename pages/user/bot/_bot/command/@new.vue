@@ -12,7 +12,8 @@
 <i18n>
 {
   "en": {
-    "submit": "Submit"
+    "submit": "Submit",
+    "page-title": "New Command"
   }
 }
 </i18n>
@@ -20,6 +21,11 @@
 import { Vue, Component } from 'vue-property-decorator'
 
 @Component({
+  head() {
+    return {
+      title: this.$t('page-title').toString(),
+    }
+  },
   middleware: 'auth',
   layout: 'user',
 })

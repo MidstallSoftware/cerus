@@ -30,9 +30,17 @@
 import { Vue, Component } from 'vue-property-decorator'
 
 @Component({
-  head: {
-    title: 'Log In',
-    meta: [{ hid: 'og:title', name: 'og:title', content: 'Log In - Cerus' }],
+  head() {
+    return {
+      title: this.$t('login').toString(),
+      meta: [
+        {
+          hid: 'og:title',
+          name: 'og:title',
+          content: this.$t('full-title', { page: this.$t('login') }).toString(),
+        },
+      ],
+    }
   },
 })
 export default class PageLogin extends Vue {

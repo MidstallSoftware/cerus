@@ -19,7 +19,7 @@
               {{ $t('running') }}
             </p>
             <p>{{ $t('created', { value: bot.created }) }}</p>
-            <v-btn @click="startStop">{{
+            <v-btn :disabled="startingStopping" @click="startStop">{{
               $t(bot.running ? 'stop' : 'start')
             }}</v-btn>
             <v-btn color="red" @click="deleteThis">
@@ -54,6 +54,7 @@
 <i18n>
 {
   "en": {
+    "page-title": "{name}",
     "info": "Information",
     "premium": "Premium",
     "created": "Created: {value}",
@@ -76,6 +77,13 @@ import { BaseMessageInterface } from '~/api/message'
 import { APIBot } from '~/api/types'
 
 @Component({
+  head() {
+    return {
+      title: this.$t('page-title', {
+        name: (this as PageUserBotSlug).bot.name,
+      }).toString(),
+    }
+  },
   middleware: 'auth',
   layout: 'user',
 })
@@ -84,18 +92,23 @@ export default class PageUserBotSlug extends Vue {
   validSettings: boolean = false
   premiumValid: boolean = false
   error: Error = null
+  startingStopping: boolean = false
 
   startStop() {
-    this.error = null
-    this.$axios
-      .$patch(`/api/v1/bots?id=${this.$route.params.bot}`, {
-        running: !this.bot.running,
-      })
-      .then((msg: BaseMessageInterface) => {
-        msg.data.created = new Date(msg.data.created)
-        this.bot = msg.data
-      })
-      .catch((e) => (this.error = e))
+    if (!this.startingStopping) {
+      this.error = null
+      this.startingStopping = true
+      this.$axios
+        .$patch(`/api/v1/bots?id=${this.$route.params.bot}`, {
+          running: !this.bot.running,
+        })
+        .then((msg: BaseMessageInterface) => {
+          msg.data.created = new Date(msg.data.created)
+          this.bot = msg.data
+          this.startingStopping = false
+        })
+        .catch((e) => (this.error = e))
+    }
   }
 
   deleteThis() {

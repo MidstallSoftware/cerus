@@ -40,7 +40,12 @@
               "
               class="pl-4 text--primary text-decoration-none"
             >
-              <v-list-item-title v-text="command.name" />
+              <v-list-item-title>
+                <p>
+                  <span class="blue-grey--text darken-2--text">/</span>
+                  {{ command.name }}
+                </p>
+              </v-list-item-title>
             </a>
           </v-list-item>
           <v-list-item link>
@@ -155,7 +160,14 @@ export default class LayoutUser extends Vue {
         const cmd = this.bot.commands.find(
           ({ id }) => id === parseInt(this.$route.params.cmd.toString())
         )
-        return typeof cmd === 'object' ? cmd.name : ''
+        return typeof cmd === 'object' ? '/' + cmd.name : ''
+      },
+      'user-bot-bot-message-@new': () => this.$t('new-message').toString(),
+      'user-bot-bot-message-msg': () => {
+        const msg = this.bot.messages.find(
+          ({ id }) => id === parseInt(this.$route.params.msg.toString())
+        )
+        return typeof msg === 'object' ? msg.regex : ''
       },
     }
 

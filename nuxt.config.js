@@ -5,13 +5,21 @@ export default {
   head() {
     const i18nHead = this.$nuxtI18nHead({ addSeoAttributes: true })
     return {
-      titleTemplate: '%s - Cerus',
-      title: 'Cerus',
+      titleTemplate: this.$t('full-title', { page: '%s' }),
+      title: this.$t('default-title'),
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { hid: 'og:title', name: 'og:title', content: 'Cerus' },
-        { hid: 'description', name: 'description', content: '' },
+        {
+          hid: 'og:title',
+          name: 'og:title',
+          content: this.$t('default-title'),
+        },
+        {
+          hid: 'description',
+          name: 'description',
+          content: this.$t('default-desc'),
+        },
         { name: 'format-detection', content: 'telephone=no' },
         ...i18nHead.meta,
       ],
@@ -88,7 +96,12 @@ export default {
     vueI18n: {
       fallbackLocale: 'en',
       messages: {
-        en: {},
+        en: {
+          'full-title': '{page} - Cerus',
+          'default-title': 'Cerus',
+          'default-desc':
+            'Cerus is a Discord bot hosting platform, developed and operated by Midstall Software. It aims to provide ease of use and accurate data to operate bots for Discord.',
+        },
       },
     },
   },

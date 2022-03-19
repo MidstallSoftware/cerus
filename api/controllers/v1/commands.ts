@@ -1,4 +1,4 @@
-import ExcelJS from 'exceljs'
+import { CellValue, Workbook } from 'exceljs'
 import { NextFunction, Request, Response } from 'express'
 import { PartialModelObject, QueryBuilder } from 'objection'
 import { HttpUnauthorizedError } from '../../exceptions'
@@ -79,7 +79,7 @@ export default function () {
           if (!command.premium)
             throw new Error('Premium access is required to export analytics')
 
-          const workbook = new ExcelJS.Workbook()
+          const workbook = new Workbook()
           workbook.creator = 'Cerus'
           workbook.created = new Date()
 
@@ -127,7 +127,7 @@ export default function () {
           sheet.getCell(`B${nextRow}`).value = {
             formula: `COUNT(A2:A${nextRow - 2})`,
             result: (command.calls as APICommandCall[]).length,
-          } as ExcelJS.CellValue
+          } as CellValue
 
           sheet.getCell(`C${nextRow}`).value = 'Cost Per Call'
           sheet.getCell(`C${nextRow}`).style = {
@@ -150,7 +150,7 @@ export default function () {
           sheet.getCell(`F${nextRow}`).value = {
             formula: `B${nextRow} * D${nextRow}`,
             result: (command.calls as APICommandCall[]).length * 0.05,
-          } as ExcelJS.CellValue
+          } as CellValue
           sheet.getCell(`F${nextRow}`).style = {
             numFmt: '$0.00',
           }
