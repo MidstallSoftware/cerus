@@ -1,5 +1,6 @@
 import { createLocalVue, mount, Wrapper } from '@vue/test-utils'
 import { CombinedVueInstance } from 'vue/types/vue'
+import mockAxios from 'jest-mock-axios'
 import Vuetify from 'vuetify'
 import PageLogin from '../../pages/login.vue'
 
@@ -25,6 +26,7 @@ describe('PageLogin', () => {
           error: null,
           loginWith: () => {},
         },
+        $axios: mockAxios,
         $t: (key: string) => key,
       },
     })

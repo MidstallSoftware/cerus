@@ -1,4 +1,5 @@
 import { createLocalVue, mount } from '@vue/test-utils'
+import mockAxios from 'jest-mock-axios'
 import Vuetify from 'vuetify'
 import PageIndex from '../../pages/index.vue'
 
@@ -19,6 +20,7 @@ describe('PageIndex', () => {
       localVue,
       vuetify,
       mocks: {
+        $axios: mockAxios,
         $t: (key: string) => key,
       },
     })

@@ -185,9 +185,9 @@ export default class PageIndex extends Vue {
   loadStats() {
     this.statsError = null
     this.$axios
-      .$get('/api/v1/instance/stats')
-      .then((msg: BaseMessageInterface) => {
-        this.stats = msg.data
+      .get('/api/v1/instance/stats')
+      .then((res) => {
+        this.stats = (res.data as BaseMessageInterface).data
       })
       .catch((e) => (this.statsError = e))
   }
