@@ -3,6 +3,7 @@ import { CellValue, Workbook } from 'exceljs'
 import { NextFunction, Request, Response } from 'express'
 import { PartialModelObject } from 'objection'
 import { HttpUnauthorizedError } from '../../exceptions'
+import BotCall from '../../database/entities/botcall'
 import BotCommand from '../../database/entities/botcommand'
 import User from '../../database/entities/user'
 import { BaseMessage } from '../../message'
@@ -167,10 +168,18 @@ export default function () {
         if (!res.locals.auth && !res.locals.auth.user)
           throw new HttpUnauthorizedError('User is not authenticated')
 
+        const user: User = res.locals.auth.user
+        const id = parseInt(req.query.id.toString())
         BotCommand.query()
-          .deleteById(parseInt(req.query.id.toString()))
-          .then((count) => {
+          .deleteById(id)
+          .whereIn(
+            'botId',
+            Bot.query().select('bots.id').where('ownerId', user.id)
+          )
+          .then(async (count) => {
             if (count === 0) throw new Error("Couldn't delete bot command")
+
+            await BotCall.query().where('commandId', id).delete()
 
             res.json(
               new BaseMessage(
@@ -231,7 +240,7 @@ export default function () {
         BotCommand.query()
           .findById(id)
           .whereIn(
-            'id',
+            'botId',
             Bot.query()
               .select('bots.id')
               .joinRelated('commands')
@@ -267,7 +276,7 @@ export default function () {
       const query = BotCommand.query()
         .where('botId', botId)
         .whereIn(
-          'id',
+          'botId',
           Bot.query()
             .select('bots.id')
             .joinRelated('commands')
