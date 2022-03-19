@@ -2,6 +2,7 @@ import { utcToZonedTime } from 'date-fns-tz'
 import { NextFunction, Request, Response } from 'express'
 import { PartialModelObject } from 'objection'
 import { HttpUnauthorizedError } from '../../exceptions'
+import BotCall from '../../database/entities/botcall'
 import BotMessage from '../../database/entities/botmessage'
 import User from '../../database/entities/user'
 import { BaseMessage } from '../../message'
@@ -66,15 +67,18 @@ export default function () {
         if (!res.locals.auth && !res.locals.auth.user)
           throw new HttpUnauthorizedError('User is not authenticated')
 
+        const id = parseInt(req.query.id.toString())
         const user: User = res.locals.auth.user
         BotMessage.query()
-          .deleteById(parseInt(req.query.id.toString()))
+          .deleteById(id)
           .whereIn(
             'botId',
             Bot.query().select('bots.id').where('ownerId', user.id)
           )
-          .then((count) => {
+          .then(async (count) => {
             if (count === 0) throw new Error("Couldn't delete bot command")
+
+            await BotCall.query().where('messageId', id).delete()
 
             res.json(
               new BaseMessage(

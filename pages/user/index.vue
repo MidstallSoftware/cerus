@@ -1,10 +1,23 @@
 <template>
   <div style="padding-top: 25px">
-    <v-row justify="center" align="start">
-      <v-col cols="12" md="10" lg="8" xl="8">
+    <v-row v-if="error != null">
+      <v-col cols="12">
+        <v-alert type="error">{{ error.message }}</v-alert>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="12">
         <v-alert v-if="typeof userInfo != 'object'" type="success" dense>
           {{ $t('loading') }}
         </v-alert>
+        <v-card>
+          <v-card-title>{{ $t('settings') }}</v-card-title>
+          <v-card-text>
+            <v-btn color="red" @click="deleteUser">
+              {{ $t('delete-user') }}
+            </v-btn>
+          </v-card-text>
+        </v-card>
       </v-col>
     </v-row>
   </div>
@@ -13,7 +26,9 @@
 {
   "en": {
     "loading": "Loading... please wait",
-    "page-title": "User"
+    "page-title": "User",
+    "settings": "User Settings",
+    "delete-user": "Delete User"
   }
 }
 </i18n>
@@ -42,9 +57,22 @@ interface UserInfo {}
 })
 export default class PageUserIndex extends Vue {
   userInfo: UserInfo = null
+  error: Error = null
 
   created() {
-    this.$axios.get('/api/v1/user').then((res) => (this.userInfo = res.data))
+    this.error = null
+    this.$axios
+      .get('/api/v1/user')
+      .then((res) => (this.userInfo = res.data))
+      .catch((e) => (this.error = e))
+  }
+
+  deleteUser() {
+    this.error = null
+    this.$axios
+      .$delete('/api/v1/user')
+      .then(() => this.$auth.logout())
+      .catch((e) => (this.error = e))
   }
 }
 </script>

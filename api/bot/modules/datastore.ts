@@ -1,6 +1,6 @@
 import { utcToZonedTime } from 'date-fns-tz'
 import { createSingleQueryCache, createQueryCache, fixDate } from '../../utils'
-import { BotDataStore } from '../../database/entities/botdatastore'
+import BotDataStore from '../../database/entities/botdatastore'
 import { definedModule, Module } from '../module'
 
 const createStore = (mod: Module, key: string) =>

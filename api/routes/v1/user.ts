@@ -7,5 +7,6 @@ export default function (): Router {
   const controller = genController()
 
   router.get('/', validateAuth, controller.info)
+  router.delete('/', validateAuth, controller.delete)
   return router
 }

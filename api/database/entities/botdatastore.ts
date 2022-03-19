@@ -1,7 +1,7 @@
 import { Model } from 'objection'
 import Bot from './bot'
 
-export class BotDataStore extends Model {
+export default class BotDataStore extends Model {
   id!: number
   botId!: number
   bot!: Bot

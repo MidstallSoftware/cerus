@@ -100,7 +100,6 @@ export default function () {
               customer: user.customerId,
             })
           ).data.find((sub) => {
-            console.log(sub.items.data[0], req.body)
             return (
               sub.items.data[0].price.metadata.type === req.body.type &&
               sub.items.data[0].price.metadata.id === req.body.id.toString()
