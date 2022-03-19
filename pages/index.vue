@@ -164,7 +164,6 @@ export default class PageIndex extends Vue {
   }
 
   statsError: Error = null
-  statsInt: NodeJS.Timer
 
   formatSize(size: number): string {
     const i = Math.floor(Math.log(size) / Math.log(1024))
