@@ -1,12 +1,9 @@
 import { Request, Response, NextFunction } from 'express'
 import { utcToZonedTime } from 'date-fns-tz'
 import { Client } from 'discord.js'
-import { QueryBuilder } from 'objection'
 import {
   createPageQueryCache,
   createQueryCache,
-  createSingleQueryCache,
-  fixDate,
   getInt,
   invalidateCacheWithPrefix,
   sendCachedResponse,
@@ -18,54 +15,9 @@ import { BaseMessage } from '../../message'
 import BotCommand from '../../database/entities/botcommand'
 import BotMessage from '../../database/entities/botmessage'
 import winston from '../../providers/winston'
-import { APIBot } from '../../types'
 import { DI } from '../../di'
 import BotInstance from '../../bot'
-
-async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
-  const cache = createSingleQueryCache(Bot, query, 'bots')
-
-  const value = await cache.read()
-
-  const cacheMessages = createQueryCache(
-    BotMessage,
-    BotMessage.query().where('botId', value.id),
-    'messages'
-  )
-  const cacheCommands = createQueryCache(
-    BotCommand,
-    BotCommand.query().where('botId', value.id),
-    'commands'
-  )
-
-  const valueMessages = await cacheMessages.read()
-  const valueCommands = await cacheCommands.read()
-
-  return {
-    id: value.id,
-    name: value.name,
-    discordId: value.discordId,
-    avatar: await value.getAvatar(),
-    running: DI.bots.has(value.id),
-    created: fixDate(value.created),
-    premium: value.premium === 1,
-    messages: valueMessages.map((msg) => ({
-      id: msg.id,
-      regex: msg.regex,
-      created: fixDate(msg.created),
-      code: msg.code,
-    })),
-    commands: valueCommands.map((cmd) => ({
-      id: cmd.id,
-      name: cmd.name,
-      botId: cmd.botId,
-      premium: cmd.premium === 1,
-      calls: [],
-      created: fixDate(cmd.created),
-      code: cmd.code,
-    })),
-  }
-}
+import { fetchBot } from '../../lib/bot'
 
 export default function () {
   return {

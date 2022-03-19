@@ -12,8 +12,11 @@ export interface APICommandCallSummary {
   messages: string[]
 }
 
-export interface APICommandCall {
+export interface APIInteractionCall {
   id: number
+  result: string
+  error: string
+  message: string
   callerId: string
   timestamp: Date
 }
@@ -21,13 +24,14 @@ export interface APICommandCall {
 export interface APIMessage extends APIObject {
   regex: string
   code: string
+  calls: APIInteractionCall[]
 }
 
 export interface APICommand extends APIObject {
   botId: number
   name: string
   premium: boolean
-  calls: APICommandCallSummary | APICommandCall[]
+  calls: APICommandCallSummary | APIInteractionCall[]
   code: string
 }
 

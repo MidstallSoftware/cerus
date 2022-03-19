@@ -1,67 +1,21 @@
 import { utcToZonedTime } from 'date-fns-tz'
 import { CellValue, Workbook } from 'exceljs'
 import { NextFunction, Request, Response } from 'express'
-import { PartialModelObject, QueryBuilder } from 'objection'
+import { PartialModelObject } from 'objection'
 import { HttpUnauthorizedError } from '../../exceptions'
 import BotCommand from '../../database/entities/botcommand'
+import User from '../../database/entities/user'
 import { BaseMessage } from '../../message'
 import {
   createPageQueryCache,
   createQueryCache,
   createSingleQueryCache,
-  fixDate,
   getInt,
   sendCachedResponse,
 } from '../../utils'
 import Bot from '../../database/entities/bot'
-import BotCall from '../../database/entities/botcall'
-import { APICommand, APICommandCall, APICommandCallSummary } from '../../types'
-
-const transformCall = (call: BotCall) =>
-  ({
-    id: call.id,
-    result: call.result,
-    errors: call.errors,
-    message: call.message,
-    callerId: call.callerId,
-    timestamp: fixDate(call.dateTime),
-  } as APICommandCall)
-
-const transformCommand = (cmd: BotCommand) =>
-  ({
-    id: cmd.id,
-    botId: cmd.botId,
-    name: cmd.name,
-    premium: cmd.premium === 1,
-    code: cmd.code,
-    calls:
-      typeof cmd.calls === 'undefined'
-        ? []
-        : cmd.premium === 1
-        ? cmd.calls.map(transformCall)
-        : ({
-            thisMonth: cmd.calls.filter(
-              (c) => fixDate(c.dateTime).getMonth() === new Date().getMonth()
-            ).length,
-            thisYear: cmd.calls.filter(
-              (c) =>
-                fixDate(c.dateTime).getFullYear() === new Date().getFullYear()
-            ).length,
-            lifetime: cmd.calls.length,
-            results: cmd.calls.map((c) => c.result),
-            errors: cmd.calls.map((c) => c.errors),
-            messages: cmd.calls.map((c) => c.messages),
-          } as APICommandCallSummary),
-    created: fixDate(cmd.created),
-  } as APICommand)
-
-const fetchCommand = async (query: QueryBuilder<BotCommand, BotCommand>) => {
-  const value = await createSingleQueryCache(
-    BotCommand,
-    query.withGraphFetched('calls')
-  ).read()
-  return transformCommand(value)
-}
+import { fetchCommand, transformCommand } from '../../lib/command'
+import { APIInteractionCall } from '../../types'
 
 export default function () {
   return {
@@ -107,7 +61,7 @@ export default function () {
             },
           ]
 
-          for (const call of command.calls as APICommandCall[]) {
+          for (const call of command.calls as APIInteractionCall[]) {
             sheet.addRow({
               id: call.id,
               caller: call.callerId,
@@ -125,7 +79,7 @@ export default function () {
           }
           sheet.getCell(`B${nextRow}`).value = {
             formula: `COUNT(A2:A${nextRow - 2})`,
-            result: (command.calls as APICommandCall[]).length,
+            result: (command.calls as APIInteractionCall[]).length,
           } as CellValue
 
           sheet.getCell(`C${nextRow}`).value = 'Cost Per Call'
@@ -148,7 +102,7 @@ export default function () {
 
           sheet.getCell(`F${nextRow}`).value = {
             formula: `B${nextRow} * D${nextRow}`,
-            result: (command.calls as APICommandCall[]).length * 0.05,
+            result: (command.calls as APIInteractionCall[]).length * 0.05,
           } as CellValue
           sheet.getCell(`F${nextRow}`).style = {
             numFmt: '$0.00',
@@ -179,9 +133,10 @@ export default function () {
         const run = async () => {
           const botId = parseInt(req.query.botId.toString())
           const name = req.query.name.toString()
+          const user: User = res.locals.auth.user
           const bot = await createSingleQueryCache(
             Bot,
-            Bot.query().findById(botId)
+            Bot.query().findById(botId).where('ownerId', user.id)
           ).read()
           const commands = await createQueryCache(
             BotCommand,
@@ -236,6 +191,8 @@ export default function () {
         if (!res.locals.auth && !res.locals.auth.user)
           throw new HttpUnauthorizedError('User is not authenticated')
 
+        const id = parseInt(req.query.id.toString())
+        const user: User = res.locals.auth.user
         const obj: PartialModelObject<BotCommand> = {}
 
         if (typeof req.body.code === 'string') obj.code = req.body.code
@@ -246,10 +203,15 @@ export default function () {
         }
 
         fetchCommand(
-          BotCommand.query().patchAndFetchById(
-            parseInt(req.query.id.toString()),
-            obj
-          )
+          BotCommand.query()
+            .patchAndFetchById(id, obj)
+            .whereIn(
+              'botId',
+              Bot.query()
+                .select('bots.id')
+                .where('ownerId', user.id)
+                .where('bots.id', id)
+            )
         )
           .then((data) => {
             res.json(new BaseMessage(data, 'command:update'))
@@ -263,8 +225,18 @@ export default function () {
       if (!res.locals.auth && !res.locals.auth.user)
         throw new HttpUnauthorizedError('User is not authenticated')
 
+      const user: User = res.locals.auth.user
+      const id = parseInt(req.query.id.toString())
       const command = await fetchCommand(
-        BotCommand.query().findById(parseInt(req.query.id.toString()))
+        BotCommand.query()
+          .findById(id)
+          .whereIn(
+            'id',
+            Bot.query()
+              .select('bots.id')
+              .joinRelated('commands')
+              .where('bots.ownerId', user.id)
+          )
       )
       return new BaseMessage(command, 'commands:get')
     }),
@@ -274,6 +246,8 @@ export default function () {
 
       const offset = getInt((req.query.offset || '0').toString())
       const pageSize = getInt((req.query.count || '0').toString())
+      const botId = parseInt(req.query.botId.toString())
+      const user: User = res.locals.auth.user
 
       const send = async (results: BotCommand[], total: number) => {
         const list = await Promise.all(
@@ -291,7 +265,14 @@ export default function () {
       }
 
       const query = BotCommand.query()
-        .where('botId', parseInt(req.query.botId.toString()))
+        .where('botId', botId)
+        .whereIn(
+          'id',
+          Bot.query()
+            .select('bots.id')
+            .joinRelated('commands')
+            .where('bots.ownerId', user.id)
+        )
         .select('id')
       if (pageSize > 0) {
         const cache = await createPageQueryCache(

@@ -99,7 +99,7 @@ import 'prismjs/components/prism-lua'
 import { PrismEditor } from 'vue-prism-editor'
 import { Vue, Component } from 'vue-property-decorator'
 import { BaseMessageInterface } from '~/api/message'
-import { APIBot, APICommand, APICommandCall } from '~/api/types'
+import { APIBot, APICommand, APIInteractionCall } from '~/api/types'
 
 @Component({
   head() {
@@ -189,7 +189,7 @@ export default class PageUserBotCommandSlug extends Vue {
       .$get(`/api/v1/commands?id=${this.$route.params.cmd}`)
       .then((msg: BaseMessageInterface) => {
         if (msg.data.premium)
-          msg.data.calls = msg.data.calls.map((call: APICommandCall) => {
+          msg.data.calls = msg.data.calls.map((call: APIInteractionCall) => {
             call.timestamp = new Date(call.timestamp)
             return call
           })

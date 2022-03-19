@@ -1,28 +1,19 @@
 import { utcToZonedTime } from 'date-fns-tz'
 import { NextFunction, Request, Response } from 'express'
-import { PartialModelObject, QueryBuilder } from 'objection'
+import { PartialModelObject } from 'objection'
 import { HttpUnauthorizedError } from '../../exceptions'
 import BotMessage from '../../database/entities/botmessage'
+import User from '../../database/entities/user'
 import { BaseMessage } from '../../message'
 import {
   createPageQueryCache,
   createQueryCache,
   createSingleQueryCache,
-  fixDate,
   getInt,
   sendCachedResponse,
 } from '../../utils'
 import Bot from '../../database/entities/bot'
-
-const transformMessage = (msg: BotMessage) => ({
-  id: msg.id,
-  regex: msg.regex,
-  code: msg.code,
-  create: fixDate(msg.created),
-})
-
-const fetchMessage = async (query: QueryBuilder<BotMessage, BotMessage>) =>
-  transformMessage(await createSingleQueryCache(BotMessage, query).read())
+import { transformMessage, fetchMessage } from '../../lib/message'
 
 export default function () {
   return {
@@ -34,6 +25,7 @@ export default function () {
         const run = async () => {
           const botId = parseInt(req.query.botId.toString())
           const regex = req.query.regex.toString()
+          const user: User = res.locals.auth.user
           const bot = await createSingleQueryCache(
             Bot,
             Bot.query().findById(botId)
@@ -42,7 +34,13 @@ export default function () {
             throw new Error('A premium bot is required for message hooks')
           const messages = await createQueryCache(
             BotMessage,
-            BotMessage.query().where('botId', bot.id).where('regex', regex)
+            BotMessage.query()
+              .where('botId', bot.id)
+              .where('regex', regex)
+              .whereIn(
+                'botId',
+                Bot.query().select('bots.id').where('ownerId', user.id)
+              )
           ).read()
           if (messages.length > 0)
             throw new Error(
@@ -68,8 +66,13 @@ export default function () {
         if (!res.locals.auth && !res.locals.auth.user)
           throw new HttpUnauthorizedError('User is not authenticated')
 
+        const user: User = res.locals.auth.user
         BotMessage.query()
           .deleteById(parseInt(req.query.id.toString()))
+          .whereIn(
+            'botId',
+            Bot.query().select('bots.id').where('ownerId', user.id)
+          )
           .then((count) => {
             if (count === 0) throw new Error("Couldn't delete bot command")
 
@@ -92,6 +95,8 @@ export default function () {
         if (!res.locals.auth && !res.locals.auth.user)
           throw new HttpUnauthorizedError('User is not authenticated')
 
+        const id = parseInt(req.query.id.toString())
+        const user: User = res.locals.auth.user
         const obj: PartialModelObject<BotMessage> = {}
 
         if (typeof req.body.regex === 'string') obj.regex = req.body.regex
@@ -102,10 +107,12 @@ export default function () {
         }
 
         fetchMessage(
-          BotMessage.query().patchAndFetchById(
-            parseInt(req.query.id.toString()),
-            obj
-          )
+          BotMessage.query()
+            .patchAndFetchById(id, obj)
+            .whereIn(
+              'botId',
+              Bot.query().select('bots.id').where('ownerId', user.id)
+            )
         )
           .then((data) => {
             res.json(new BaseMessage(data, 'messages:update'))
@@ -119,8 +126,14 @@ export default function () {
       if (!res.locals.auth && !res.locals.auth.user)
         throw new HttpUnauthorizedError('User is not authenticated')
 
+      const user: User = res.locals.auth.user
       const message = await fetchMessage(
-        BotMessage.query().findById(parseInt(req.query.id.toString()))
+        BotMessage.query()
+          .findById(parseInt(req.query.id.toString()))
+          .whereIn(
+            'botId',
+            Bot.query().select('bots.id').where('ownerId', user.id)
+          )
       )
       return new BaseMessage(message, 'messages:get')
     }),
@@ -130,6 +143,7 @@ export default function () {
 
       const offset = getInt((req.query.offset || '0').toString())
       const pageSize = getInt((req.query.count || '0').toString())
+      const user: User = res.locals.auth.user
 
       const send = async (results: BotMessage[], total: number) => {
         const list = await Promise.all(
@@ -148,6 +162,10 @@ export default function () {
 
       const query = BotMessage.query()
         .where('botId', parseInt(req.query.botId.toString()))
+        .whereIn(
+          'botId',
+          Bot.query().select('bots.id').where('ownerId', user.id)
+        )
         .select('id')
       if (pageSize > 0) {
         const cache = await createPageQueryCache(

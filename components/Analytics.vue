@@ -48,7 +48,7 @@ import {
   startOfWeek,
   startOfYear,
 } from 'date-fns'
-import { APICommandCall } from '~/api/types'
+import { APIInteractionCall } from '~/api/types'
 
 enum ViewType {
   WEEK = 'week',
@@ -56,7 +56,7 @@ enum ViewType {
   YEAR = 'year',
 }
 
-type GetAnalytics = (view: ViewType) => APICommandCall[]
+type GetAnalytics = (view: ViewType) => APIInteractionCall[]
 const GetAnalyticsDefault: GetAnalytics = () => []
 
 @Component
