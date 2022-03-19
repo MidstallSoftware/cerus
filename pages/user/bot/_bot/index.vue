@@ -49,6 +49,18 @@
         </v-card>
       </v-col>
     </v-row>
+    <v-row v-else>
+      <v-col cols="12">
+        <v-card class="mx-auto">
+          <v-card-title>{{ $t('premium-management') }}</v-card-title>
+          <v-card-text>
+            <v-btn @click="cancelPremium">
+              {{ $t('premium-cancel') }}
+            </v-btn>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
   </div>
 </template>
 <i18n>
@@ -62,6 +74,8 @@
     "start": "Start",
     "stop": "Stop",
     "delete": "Delete",
+    "premium-management": "Premium",
+    "premium-cancel": "Cancel",
     "premium-signup": "Sign up for Premium",
     "premium-signup-text": "Making your bot a premium bot gives you access to the best features we can provide.",
     "premium-features-heading": "Features",
@@ -121,6 +135,21 @@ export default class PageUserBotSlug extends Vue {
       .catch((e) => {
         this.error = e
       })
+  }
+
+  cancelPremium() {
+    this.error = null
+    this.$axios
+      .post('/api/v1/billing/cancel', {
+        id: parseInt(this.$route.params.bot),
+        type: 'bot',
+      })
+      .then(() => this.$axios.$get(`/api/v1/bots?id=${this.$route.params.bot}`))
+      .then((msg: BaseMessageInterface) => {
+        msg.data.created = new Date(msg.data.created)
+        this.bot = msg.data
+      })
+      .catch((e) => (this.error = e))
   }
 
   premiumSubmit(e: Event) {

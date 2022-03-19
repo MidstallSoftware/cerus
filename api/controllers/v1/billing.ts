@@ -6,11 +6,15 @@ import Bot from '../../database/entities/bot'
 import BotCommand from '../../database/entities/botcommand'
 import User from '../../database/entities/user'
 import winston from '../../providers/winston'
+import { HttpUnauthorizedError } from '../../exceptions'
 
 export default function () {
   return {
     checkout: (req: Request, res: Response, next: NextFunction) => {
       try {
+        if (!res.locals.auth && !res.locals.auth.user)
+          throw new HttpUnauthorizedError('User is not authenticated')
+
         const user: User = res.locals.auth.user
         DI.stripe.prices
           .list({
@@ -79,6 +83,38 @@ export default function () {
             res.json(new BaseMessage({ url: session.url }, 'billing:checkout'))
           )
           .catch((e) => next(e))
+      } catch (e) {
+        next(e)
+      }
+    },
+    cancel: (req: Request, res: Response, next: NextFunction) => {
+      try {
+        if (!res.locals.auth && !res.locals.auth.user)
+          throw new HttpUnauthorizedError('User is not authenticated')
+
+        const user: User = res.locals.auth.user
+
+        const run = async () => {
+          const sub = (
+            await DI.stripe.subscriptions.list({
+              customer: user.customerId,
+            })
+          ).data.find((sub) => {
+            console.log(sub.items.data[0], req.body)
+            return (
+              sub.items.data[0].price.metadata.type === req.body.type &&
+              sub.items.data[0].price.metadata.id === req.body.id.toString()
+            )
+          })
+
+          if (typeof sub === 'undefined')
+            throw new Error('Subscription does not exist with those parameters')
+
+          await DI.stripe.subscriptions.del(sub.id)
+          res.json(new BaseMessage({ id: sub.id }, 'billing:cancel'))
+        }
+
+        run().catch((e) => next(e))
       } catch (e) {
         next(e)
       }

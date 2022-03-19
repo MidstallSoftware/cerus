@@ -23,6 +23,19 @@ export default function (): Router {
   )
 
   router.post(
+    '/cancel',
+    validateAuth,
+    validateBody({
+      type: 'object',
+      properties: {
+        id: { type: 'number', required: true },
+        type: { type: 'string', enum: ['bot', 'command'], required: true },
+      },
+    }),
+    controller.cancel
+  )
+
+  router.post(
     '/portal',
     validateBody({
       type: 'object',

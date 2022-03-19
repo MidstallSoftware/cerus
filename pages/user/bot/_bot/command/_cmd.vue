@@ -32,6 +32,18 @@
           </v-card>
         </v-col>
       </v-row>
+      <v-row>
+        <v-col cols="12">
+          <v-card class="mx-auto">
+            <v-card-title>{{ $t('premium-management') }}</v-card-title>
+            <v-card-text>
+              <v-btn @click="cancelPremium">
+                {{ $t('premium-cancel') }}
+              </v-btn>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
     </div>
     <div v-else>
       <v-row>
@@ -81,6 +93,8 @@
     "analytics": "Analytics",
     "download": "Export to Excel",
     "calls": "# of interactions... this month: {thisMonth}, this year: {thisYear}, in forever: {lifetime}",
+    "premium-management": "Premium",
+    "premium-cancel": "Cancel",
     "premium-signup": "Sign up for Premium",
     "premium-signup-text": "Gives the command access to caching and storing data",
     "premium-features-heading": "Features",
@@ -164,6 +178,27 @@ export default class PageUserBotCommandSlug extends Vue {
 
   highlighter(code: string) {
     return Prism.highlight(code, Prism.languages.lua, 'lua')
+  }
+
+  cancelPremium() {
+    this.error = null
+    this.$axios
+      .post('/api/v1/billing/cancel', {
+        id: parseInt(this.$route.params.cmd),
+        type: 'command',
+      })
+      .then(() =>
+        this.$axios.$get(`/api/v1/commands?id=${this.$route.params.cmd}`)
+      )
+      .then((msg: BaseMessageInterface) => {
+        if (msg.data.premium)
+          msg.data.calls = msg.data.calls.map((call: APIInteractionCall) => {
+            call.timestamp = new Date(call.timestamp)
+            return call
+          })
+        this.command = msg.data
+      })
+      .catch((e) => (this.error = e))
   }
 
   premiumSubmit(e: Event) {
