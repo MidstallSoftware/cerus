@@ -1,3 +1,4 @@
+import { utcToZonedTime } from 'date-fns-tz'
 import { CellValue, Workbook } from 'exceljs'
 import { NextFunction, Request, Response } from 'express'
 import { PartialModelObject, QueryBuilder } from 'objection'
@@ -8,18 +9,13 @@ import {
   createPageQueryCache,
   createQueryCache,
   createSingleQueryCache,
+  fixDate,
   getInt,
   sendCachedResponse,
 } from '../../utils'
 import Bot from '../../database/entities/bot'
 import BotCall from '../../database/entities/botcall'
 import { APICommand, APICommandCall, APICommandCallSummary } from '../../types'
-
-const fixDate = (dt: number) => {
-  const d = new Date()
-  d.setTime(dt)
-  return d
-}
 
 const transformCall = (call: BotCall) =>
   ({
@@ -52,6 +48,9 @@ const transformCommand = (cmd: BotCommand) =>
                 fixDate(c.dateTime).getFullYear() === new Date().getFullYear()
             ).length,
             lifetime: cmd.calls.length,
+            results: cmd.calls.map((c) => c.result),
+            errors: cmd.calls.map((c) => c.errors),
+            messages: cmd.calls.map((c) => c.messages),
           } as APICommandCallSummary),
     created: fixDate(cmd.created),
   } as APICommand)
@@ -197,7 +196,7 @@ export default function () {
             botId,
             name,
             premium: 0,
-            created: Date.now(),
+            created: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
           })
 
           res.json(new BaseMessage(transformCommand(cmd), 'commands:create'))

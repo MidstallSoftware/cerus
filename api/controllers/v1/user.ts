@@ -1,6 +1,6 @@
 import User from '../../database/entities/user'
 import { BaseMessage } from '../../message'
-import { sendCachedResponse } from '../../utils'
+import { fixDate, sendCachedResponse } from '../../utils'
 
 export default function () {
   return {
@@ -12,11 +12,7 @@ export default function () {
           email: user.email,
           discordid: user.discordId,
           type: user.type,
-          created: (() => {
-            const d = new Date()
-            d.setTime(user.created)
-            return d
-          })(),
+          created: fixDate(user.created),
         },
         'user:info'
       )

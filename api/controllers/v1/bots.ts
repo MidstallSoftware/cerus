@@ -1,10 +1,12 @@
 import { Request, Response, NextFunction } from 'express'
+import { utcToZonedTime } from 'date-fns-tz'
 import { Client } from 'discord.js'
 import { QueryBuilder } from 'objection'
 import {
   createPageQueryCache,
   createQueryCache,
   createSingleQueryCache,
+  fixDate,
   getInt,
   invalidateCacheWithPrefix,
   sendCachedResponse,
@@ -45,20 +47,12 @@ async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
     discordId: value.discordId,
     avatar: await value.getAvatar(),
     running: DI.bots.has(value.id),
-    created: (() => {
-      const d = new Date()
-      d.setTime(value.created)
-      return d
-    })(),
+    created: fixDate(value.created),
     premium: value.premium === 1,
     messages: valueMessages.map((msg) => ({
       id: msg.id,
       regex: msg.regex,
-      created: (() => {
-        const d = new Date()
-        d.setTime(msg.created)
-        return d
-      })(),
+      created: fixDate(msg.created),
       code: msg.code,
     })),
     commands: valueCommands.map((cmd) => ({
@@ -67,11 +61,7 @@ async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
       botId: cmd.botId,
       premium: cmd.premium === 1,
       calls: [],
-      created: (() => {
-        const d = new Date()
-        d.setTime(cmd.created)
-        return d
-      })(),
+      created: fixDate(cmd.created),
       code: cmd.code,
     })),
   }
@@ -155,7 +145,7 @@ export default function () {
             Bot.query()
               .insertGraph({
                 name: client.user.username,
-                created: Date.now(),
+                created: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
                 ownerId: user.id,
                 discordId: discordId.toString(),
                 token: token.toString(),

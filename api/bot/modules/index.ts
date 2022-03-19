@@ -1,7 +1,8 @@
 import { ModuleFactory } from '../module'
 import cache from './cache'
+import datastore from './datastore'
 
-const modules: ModuleFactory[] = [cache]
+const modules: ModuleFactory[] = [cache, datastore]
 
 export default {
   all: modules,

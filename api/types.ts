@@ -7,9 +7,9 @@ export interface APICommandCallSummary {
   thisMonth: number
   thisYear: number
   lifetime: number
-  result: string
-  errors: string
-  messages: string
+  results: string[]
+  errors: string[]
+  messages: string[]
 }
 
 export interface APICommandCall {

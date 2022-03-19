@@ -1,0 +1,83 @@
+import { utcToZonedTime } from 'date-fns-tz'
+import { createSingleQueryCache, createQueryCache, fixDate } from '../../utils'
+import { BotDataStore } from '../../database/entities/botdatastore'
+import { definedModule, Module } from '../module'
+
+const createStore = (mod: Module, key: string) =>
+  createSingleQueryCache(
+    BotDataStore,
+    BotDataStore.query().findOne({
+      botId: mod.instance.entry.id,
+      key,
+    })
+  )
+
+const createMultiStore = (mod: Module, key: string) =>
+  createQueryCache(
+    BotDataStore,
+    BotDataStore.query().where('botId', mod.instance.entry.id).where('key', key)
+  )
+
+export default definedModule(
+  {
+    name: 'datastore',
+    requiresPremium: true,
+  },
+  (mod) => {
+    return {
+      async get(key: string): Promise<any> {
+        const cacheStore = createStore(mod, key)
+        const store = await cacheStore.read()
+        return JSON.parse(store.value || 'null')
+      },
+      async set(key: string, value: any): Promise<void> {
+        const multiStore = await createMultiStore(mod, key).read()
+        if (multiStore.length === 0) {
+          await BotDataStore.query().insert({
+            botId: mod.instance.entry.id,
+            key,
+            value: JSON.stringify(value),
+            created: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
+            updated: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
+          })
+        } else {
+          await multiStore[0].$query().patch({
+            updated: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
+            value: JSON.stringify(value),
+          })
+        }
+      },
+      async lookup(
+        key: string
+      ): Promise<{ created: Date; updated: Date; value: any } | undefined> {
+        const multiStore = await createMultiStore(mod, key).read()
+        return multiStore.length === 0
+          ? undefined
+          : {
+              created: fixDate(multiStore[0].created),
+              updated: fixDate(multiStore[0].updated),
+              value: JSON.parse(multiStore[0].value || 'null'),
+            }
+      },
+      async list(): Promise<string[]> {
+        const value = await createQueryCache(
+          BotDataStore,
+          BotDataStore.query().where('botId', mod.instance.entry.id)
+        ).read()
+        return value.map((v) => v.key)
+      },
+      async delete(key: string): Promise<boolean> {
+        return (
+          (await BotDataStore.query()
+            .where('botId', mod.instance.entry.id)
+            .where('key', key)
+            .delete()) > 0
+        )
+      },
+      async exists(key: string): Promise<boolean> {
+        const multiStore = await createMultiStore(mod, key).read()
+        return multiStore.length > 0
+      },
+    }
+  }
+)

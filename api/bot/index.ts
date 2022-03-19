@@ -1,3 +1,4 @@
+import { utcToZonedTime } from 'date-fns-tz'
 import { Client, CommandInteraction, Intents, MessageEmbed } from 'discord.js'
 import { REST } from '@discordjs/rest'
 import { codeBlock, SlashCommandBuilder } from '@discordjs/builders'
@@ -42,7 +43,7 @@ export default class BotInstance {
               await BotCall.query().insert({
                 messageId: hook.id,
                 type: 'message',
-                dateTime: Date.now(),
+                dateTime: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
                 callerId: msg.member.id,
                 result: results,
                 errors,
@@ -100,7 +101,7 @@ export default class BotInstance {
             await BotCall.query().insert({
               commandId: cmd.id,
               type: 'command',
-              dateTime: Date.now(),
+              dateTime: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
               callerId: inter.member.user.id,
               result: results,
               errors,
@@ -131,7 +132,7 @@ export default class BotInstance {
             BotCall.query().insert({
               commandId: cmd.id,
               type: 'command',
-              dateTime: Date.now(),
+              dateTime: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
               result: results,
               errors,
               messages,

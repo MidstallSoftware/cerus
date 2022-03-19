@@ -16,6 +16,12 @@ export function getInt(
   return v
 }
 
+export function fixDate(dt: number) {
+  const d = new Date()
+  d.setTime(dt)
+  return d
+}
+
 export interface CacheOptions<T> {
   fetch(): Promise<T>
   read(data: string): Promise<T>

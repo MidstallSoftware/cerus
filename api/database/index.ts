@@ -71,6 +71,14 @@ export async function init(): Promise<Knex> {
         table.text('code').nullable()
         table.dateTime('created').notNullable()
       },
+      botDataStores: (table) => {
+        table.increments('id').primary()
+        table.integer('botId').references('bots.id').notNullable()
+        table.string('key').notNullable()
+        table.text('value').nullable()
+        table.dateTime('created').notNullable()
+        table.dateTime('updated').notNullable()
+      },
       botMessages: (table) => {
         table.increments('id').primary()
         table.string('regex').notNullable()

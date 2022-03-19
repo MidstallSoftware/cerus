@@ -16,6 +16,12 @@
         </v-btn>
       </a>
 
+      <a class="text--primary" href="/user">
+        <v-btn elevation="0">
+          {{ $t('page.login') }}
+        </v-btn>
+      </a>
+
       <v-menu open-on-hover offset-y>
         <template #activator="{ on, attrs }">
           <v-btn v-bind="attrs" v-on="on">
@@ -57,6 +63,15 @@
             <a class="text--primary" href="/">
               <v-btn elevation="0">
                 {{ $t('page.home') }}
+              </v-btn>
+            </a>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item link>
+          <v-list-item-content>
+            <a class="text--primary" href="/user">
+              <v-btn elevation="0">
+                {{ $t('page.login') }}
               </v-btn>
             </a>
           </v-list-item-content>
@@ -143,6 +158,7 @@
 	"en": {
 		"product-name": "Cerus",
 		"page.home": "Home",
+    "page.login": "Log In",
 		"footer": "Cerus is a product of Midstall Software and is licensed under the GNU Public License 3.0."
 	}
 }

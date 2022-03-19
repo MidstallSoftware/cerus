@@ -1,3 +1,4 @@
+import { utcToZonedTime } from 'date-fns-tz'
 import fetch from 'node-fetch'
 import { APIUser } from 'discord-api-types/v9'
 import User from '../database/entities/user'
@@ -35,7 +36,7 @@ export async function checkUser(header: string): Promise<User> {
       email: self.email,
       type: 'default',
       customerId: customer.id,
-      created: Date.now(),
+      created: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
     })
   }
 }

@@ -1,3 +1,4 @@
+import { utcToZonedTime } from 'date-fns-tz'
 import { NextFunction, Request, Response } from 'express'
 import { PartialModelObject, QueryBuilder } from 'objection'
 import { HttpUnauthorizedError } from '../../exceptions'
@@ -7,6 +8,7 @@ import {
   createPageQueryCache,
   createQueryCache,
   createSingleQueryCache,
+  fixDate,
   getInt,
   sendCachedResponse,
 } from '../../utils'
@@ -16,11 +18,7 @@ const transformMessage = (msg: BotMessage) => ({
   id: msg.id,
   regex: msg.regex,
   code: msg.code,
-  create: (() => {
-    const d = new Date()
-    d.setTime(msg.created)
-    return d
-  })(),
+  create: fixDate(msg.created),
 })
 
 const fetchMessage = async (query: QueryBuilder<BotMessage, BotMessage>) =>
@@ -54,7 +52,7 @@ export default function () {
           const msg = await BotMessage.query().insertGraphAndFetch({
             botId,
             regex,
-            created: Date.now(),
+            created: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
           })
 
           res.json(new BaseMessage(transformMessage(msg), 'messages:create'))
