@@ -150,6 +150,11 @@ export default function () {
           .then(async (c) => {
             if (c === 0) throw new Error("Couldn't destroy bot")
 
+            if (DI.bots.has(id)) {
+              DI.bots.get(id).stop()
+              DI.bots.delete(id)
+            }
+
             const cmds = await BotCommand.query().where('botId', id)
             for (const cmd of cmds) {
               await BotCall.query().select('commandId', cmd.id).delete()

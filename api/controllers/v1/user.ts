@@ -37,6 +37,11 @@ export default function () {
           const bots = await Bot.query().where('ownerId', user.id)
 
           for (const bot of bots) {
+            if (DI.bots.has(bot.id)) {
+              DI.bots.get(bot.id).stop()
+              DI.bots.delete(bot.id)
+            }
+
             const cmds = await BotCommand.query().where('botId', bot.id)
             for (const cmd of cmds) {
               await BotCall.query().select('commandId', cmd.id).delete()
