@@ -1,3 +1,4 @@
+import cors from 'cors'
 import express, {
   urlencoded,
   json,
@@ -18,6 +19,8 @@ import genBillingController from './controllers/v1/billing'
 import { init } from './di'
 
 const app = express()
+
+app.use(cors())
 
 app.use((req: Request, _res: Response, next: NextFunction) => {
   winston.debug(
