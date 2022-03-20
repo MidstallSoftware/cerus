@@ -38,23 +38,64 @@ export async function init(): Promise<Knex> {
 
   const tables: Record<string, (tableBuilder: Knex.CreateTableBuilder) => any> =
     {
-      accessTokens: (table) => {
-        table.increments('id').primary()
-        table.string('token').notNullable().unique()
-        table.integer('userId').references('users.id').notNullable()
+      users: (table) => {
+        table.increments('id').primary().unsigned()
+        table.string('discordId').notNullable().unique()
+        table.string('email').notNullable()
+        table.string('customerId').notNullable()
+        table
+          .enum('type', ['default', 'admin'])
+          .notNullable()
+          .defaultTo('default')
+        table.dateTime('created').notNullable()
       },
       bots: (table) => {
-        table.increments('id').primary()
-        table.integer('ownerId').references('users.id').notNullable()
+        table.increments('id').primary().unsigned()
+        table.foreign('ownerId').references('id').inTable('users')
         table.string('discordId').notNullable().unique()
         table.string('token').notNullable().unique()
         table.boolean('premium').defaultTo(false)
         table.dateTime('created').notNullable()
       },
+      botMessages: (table) => {
+        table.increments('id').primary().unsigned()
+        table.string('regex').notNullable()
+        table.foreign('botId').references('id').inTable('bots')
+        table.text('code').nullable()
+        table.dateTime('created').notNullable()
+      },
+      botCommands: (table) => {
+        table.increments('id').primary().unsigned()
+        table.string('name').notNullable()
+        table.foreign('botId').references('id').inTable('bots')
+        table.boolean('premium').defaultTo(false)
+        table.json('options').defaultTo('[]')
+        table.text('description').nullable()
+        table.text('code').nullable()
+        table.dateTime('created').notNullable()
+      },
+      botDataStores: (table) => {
+        table.increments('id').primary().unsigned()
+        table.foreign('botId').references('id').inTable('bots')
+        table.string('key').notNullable()
+        table.text('value').nullable()
+        table.dateTime('created').notNullable()
+        table.dateTime('updated').notNullable()
+      },
+      accessTokens: (table) => {
+        table.increments('id').primary().unsigned()
+        table.string('token').notNullable().unique()
+        table
+          .integer('userId')
+          .unsigned()
+          .notNullable()
+          .references('id')
+          .inTable('users')
+      },
       botCalls: (table) => {
-        table.increments('id').primary()
-        table.integer('commandId').references('botCommands.id').nullable()
-        table.integer('messageId').references('botMessages.id').nullable()
+        table.increments('id').primary().unsigned()
+        table.foreign('commandId').references('id').inTable('botCommands')
+        table.foreign('messageId').references('id').inTable('botMessages')
         table.string('result').nullable()
         table.string('errors').nullable()
         table.string('messages').nullable()
@@ -64,42 +105,6 @@ export async function init(): Promise<Knex> {
         table.enum('type', ['command', 'message']).notNullable()
         table.boolean('failed')
         table.dateTime('dateTime').notNullable()
-      },
-      botCommands: (table) => {
-        table.increments('id').primary()
-        table.string('name').notNullable()
-        table.integer('botId').references('bots.id').notNullable()
-        table.boolean('premium').defaultTo(false)
-        table.json('options').defaultTo('[]')
-        table.text('description').nullable()
-        table.text('code').nullable()
-        table.dateTime('created').notNullable()
-      },
-      botDataStores: (table) => {
-        table.increments('id').primary()
-        table.integer('botId').references('bots.id').notNullable()
-        table.string('key').notNullable()
-        table.text('value').nullable()
-        table.dateTime('created').notNullable()
-        table.dateTime('updated').notNullable()
-      },
-      botMessages: (table) => {
-        table.increments('id').primary()
-        table.string('regex').notNullable()
-        table.integer('botId').references('bots.id').notNullable()
-        table.text('code').nullable()
-        table.dateTime('created').notNullable()
-      },
-      users: (table) => {
-        table.increments('id').primary()
-        table.string('discordId').notNullable().unique()
-        table.string('email').notNullable()
-        table.string('customerId').notNullable()
-        table
-          .enum('type', ['default', 'admin'])
-          .notNullable()
-          .defaultTo('default')
-        table.dateTime('created').notNullable()
       },
     }
   for (const tableName of Object.keys(tables)) {
