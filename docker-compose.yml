@@ -40,6 +40,8 @@ services:
     restart: on-failure
 
 volumes:
+  data-cache:
+    driver: local
   data-db:
 
 networks:
