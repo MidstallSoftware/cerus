@@ -1,3 +1,5 @@
+import { APIApplicationCommandOption } from 'discord-api-types/v9'
+
 export interface APIObject {
   id: number
   created: Date
@@ -19,6 +21,9 @@ export interface APIInteractionCall {
   message: string
   callerId: string
   timestamp: Date
+  failed: boolean
+  guildId: string
+  channelId: string
 }
 
 export interface APIMessage extends APIObject {
@@ -33,6 +38,8 @@ export interface APICommand extends APIObject {
   premium: boolean
   calls: APICommandCallSummary | APIInteractionCall[]
   code: string
+  description: string
+  options: APIApplicationCommandOption[]
 }
 
 export interface APIBot extends APIObject {

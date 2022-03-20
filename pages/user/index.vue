@@ -56,14 +56,14 @@ interface UserInfo {}
   },
 })
 export default class PageUserIndex extends Vue {
-  userInfo: UserInfo = null
+  userInfo: UserInfo = {}
   error: Error = null
 
   created() {
     this.error = null
     this.$axios
       .get('/api/v1/user')
-      .then((res) => (this.userInfo = res.data))
+      .then((res) => (this.userInfo = res.data.data))
       .catch((e) => (this.error = e))
   }
 

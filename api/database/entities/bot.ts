@@ -7,7 +7,6 @@ import User from './user'
 
 export default class Bot extends Model {
   id!: number
-  name!: string
   created!: number
   ownerId!: number
   owner!: User

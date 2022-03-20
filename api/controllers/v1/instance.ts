@@ -21,8 +21,8 @@ export default function () {
       const memTotal = os.totalmem()
       const onlineBots = DI.bots.size
       const totalBots = (
-        await createQueryCache(Bot, Bot.query().count('id')).read()
-      ).length
+        (await createQueryCache(Bot, Bot.query().count('id')).read())[0] as any
+      )['count(`id`)'] as number
       const totalAdminUsers = (
         (
           await createQueryCache(

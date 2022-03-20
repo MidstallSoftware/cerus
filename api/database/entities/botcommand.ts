@@ -11,6 +11,8 @@ export default class BotCommand extends Model {
   bot!: Bot
   created!: number
   calls!: BotCall[]
+  options: string
+  description!: string
 
   static tableName = 'botCommands'
 

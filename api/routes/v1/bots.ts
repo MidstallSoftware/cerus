@@ -34,6 +34,8 @@ export default function (): Router {
       minItems: 1,
       properties: {
         running: { type: 'boolean' },
+        discordId: { type: 'string' },
+        token: { type: 'string' },
       },
     }),
     controller.update

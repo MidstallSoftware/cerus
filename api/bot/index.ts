@@ -43,6 +43,9 @@ export default class BotInstance {
               await BotCall.query().insert({
                 messageId: hook.id,
                 type: 'message',
+                channelId: msg.channelId,
+                guildId: msg.guildId,
+                failed: false,
                 dateTime: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
                 callerId: msg.member.id,
                 result: results,
@@ -53,11 +56,23 @@ export default class BotInstance {
             .catch((e) => {
               errors += e.toString() + '\n'
               winston.error(e)
+              BotCall.query().insert({
+                messageId: hook.id,
+                type: 'message',
+                channelId: msg.channelId,
+                guildId: msg.guildId,
+                dateTime: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
+                callerId: msg.member.id,
+                result: results,
+                failed: true,
+                errors,
+                messages,
+              })
               msg.reply({
                 embeds: [
                   new MessageEmbed()
                     .setTitle(
-                      `${this.entry.name} - ${hook.regex}: Failed to run`
+                      `${this.client.user.username} - ${hook.regex}: Failed to run`
                     )
                     .setColor('RED')
                     .setDescription(
@@ -102,8 +117,11 @@ export default class BotInstance {
               commandId: cmd.id,
               type: 'command',
               dateTime: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
+              channelId: inter.channelId,
+              guildId: inter.guildId,
               callerId: inter.member.user.id,
               result: results,
+              failed: false,
               errors,
               messages,
             })
@@ -132,8 +150,11 @@ export default class BotInstance {
             BotCall.query().insert({
               commandId: cmd.id,
               type: 'command',
+              channelId: inter.channelId,
+              guildId: inter.guildId,
               dateTime: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
               result: results,
+              failed: true,
               errors,
               messages,
             })
@@ -141,7 +162,9 @@ export default class BotInstance {
               inter.reply({
                 embeds: [
                   new MessageEmbed()
-                    .setTitle(`${this.entry.name} - ${cmd.name}: Failed to run`)
+                    .setTitle(
+                      `${this.client.user.username} - ${cmd.name}: Failed to run`
+                    )
                     .setColor('RED')
                     .setDescription(
                       `Failed to run interaction:\n${codeBlock(e.message)}`
@@ -154,12 +177,17 @@ export default class BotInstance {
   }
 
   private setCommands(guild: string) {
-    const cmds = this.entry.commands.map((cmd) =>
-      new SlashCommandBuilder()
+    const cmds = this.entry.commands.map((cmd) => {
+      const builder = new SlashCommandBuilder()
         .setName(cmd.name)
-        .setDescription('Undescribed')
+        .setDescription(
+          typeof cmd.description !== 'string' ? 'Undescribed' : cmd.description
+        )
         .toJSON()
-    )
+
+      builder.options = JSON.parse(cmd.options || '[]') as any[]
+      return builder
+    })
     const rest = new REST({ version: '9' }).setToken(this.entry.token)
     winston.debug(`Registering commands for ${guild}`)
     return rest.put(

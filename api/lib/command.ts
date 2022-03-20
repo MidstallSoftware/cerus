@@ -12,6 +12,8 @@ export function transformCommand(cmd: BotCommand): APICommand {
     name: cmd.name,
     premium: cmd.premium === 1,
     code: cmd.code,
+    description: cmd.description,
+    options: JSON.parse(cmd.options || '[]'),
     calls:
       typeof cmd.calls === 'undefined'
         ? []

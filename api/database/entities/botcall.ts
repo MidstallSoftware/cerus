@@ -14,6 +14,9 @@ export default class BotCall extends Model {
   errors!: string
   messages!: string
   callerId!: string
+  guildId!: string
+  channelId!: string
+  failed!: boolean
 
   static tableName = 'botCalls'
 

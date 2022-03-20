@@ -59,6 +59,8 @@ export default function (): Router {
       properties: {
         name: { type: 'string', required: false, minLength: 1 },
         code: { type: 'string', required: false },
+        description: { type: 'string', required: false },
+        options: { type: 'array', required: false },
       },
     }),
     controller.update

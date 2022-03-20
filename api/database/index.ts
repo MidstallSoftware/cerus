@@ -45,7 +45,6 @@ export async function init(): Promise<Knex> {
       },
       bots: (table) => {
         table.increments('id').primary()
-        table.string('name').notNullable()
         table.integer('ownerId').references('users.id').notNullable()
         table.string('discordId').notNullable().unique()
         table.string('token').notNullable().unique()
@@ -59,8 +58,11 @@ export async function init(): Promise<Knex> {
         table.string('result').nullable()
         table.string('errors').nullable()
         table.string('messages').nullable()
+        table.string('guildId').notNullable()
+        table.string('channelId').notNullable()
         table.string('callerId').notNullable()
         table.enum('type', ['command', 'message']).notNullable()
+        table.boolean('failed')
         table.dateTime('dateTime').notNullable()
       },
       botCommands: (table) => {
@@ -68,6 +70,8 @@ export async function init(): Promise<Knex> {
         table.string('name').notNullable()
         table.integer('botId').references('bots.id').notNullable()
         table.boolean('premium').defaultTo(false)
+        table.json('options').defaultTo('[]')
+        table.text('description').nullable()
         table.text('code').nullable()
         table.dateTime('created').notNullable()
       },

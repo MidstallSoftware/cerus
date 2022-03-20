@@ -29,7 +29,7 @@ export async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
 
   return {
     id: value.id,
-    name: value.name,
+    name: (await value.fetch()).username,
     discordId: value.discordId,
     avatar: await value.getAvatar(),
     running: DI.bots.has(value.id),

@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { utcToZonedTime } from 'date-fns-tz'
 import { Client } from 'discord.js'
+import { PartialModelObject } from 'objection'
 import {
   createPageQueryCache,
   createQueryCache,
@@ -32,9 +33,15 @@ export default function () {
         const user: User = res.locals.auth.user
 
         const run = async () => {
-          const bot = await Bot.query()
-            .findOne({ ownerId: user.id })
-            .findById(id)
+          let bot = await Bot.query().findOne({ ownerId: user.id }).findById(id)
+
+          const update: PartialModelObject<Bot> = {}
+          if (typeof req.body.token === 'string') update.token = req.body.token
+          if (typeof req.body.discordId === 'string')
+            update.discordId = req.body.discordId
+
+          if (Object.keys(update).length > 0)
+            bot = await bot.$query().patchAndFetch(update)
 
           if (typeof req.body.running === 'boolean') {
             const running = req.body.running as boolean
@@ -98,7 +105,6 @@ export default function () {
 
             Bot.query()
               .insertGraph({
-                name: client.user.username,
                 created: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
                 ownerId: user.id,
                 discordId: discordId.toString(),
@@ -112,7 +118,6 @@ export default function () {
                   new BaseMessage(
                     {
                       id: bot.id,
-                      name: bot.name,
                       discordId: bot.discordId,
                       avatar: await bot.getAvatar(),
                       created: bot.created,

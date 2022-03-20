@@ -11,6 +11,15 @@
           <v-card-title>{{ $t('title') }}</v-card-title>
           <v-card-text>
             <p v-if="!command.premium">{{ $t('calls', command.calls) }}</p>
+            <v-textarea
+              ref="desc"
+              v-model="command.description"
+              :label="$t('description')"
+              @keypress="save"
+            />
+            <v-btn @click="save">
+              {{ $t('save') }}
+            </v-btn>
             <v-btn color="red" @click="deleteThis">
               {{ $t('delete') }}
             </v-btn>
@@ -75,7 +84,7 @@
             v-model="command.code"
             :highlight="highlighter"
             line-numbers
-            @keydown="saveCode"
+            @keypress="save"
           />
         </client-only>
       </v-col>
@@ -91,6 +100,7 @@
     "saving": "Saving...",
     "delete": "Delete",
     "analytics": "Analytics",
+    "description": "Description",
     "download": "Export to Excel",
     "calls": "# of interactions... this month: {thisMonth}, this year: {thisYear}, in forever: {lifetime}",
     "premium-management": "Premium",
@@ -135,17 +145,18 @@ export default class PageUserBotCommandSlug extends Vue {
   bot: APIBot = { premium: false } as APIBot
   saving: boolean = false
   error: Error = null
-  saveCode = _.throttle(() => {
+  save = _.throttle(() => {
     this.error = null
     this.saving = true
     this.$axios
       .$patch(`/api/v1/commands?id=${this.$route.params.cmd}`, {
         code: (this.$refs.editor as any).codeData as string,
+        description: (this.$refs.desc as any).value as string,
       })
       .then(() => (this.saving = false))
       .catch((e) => {
         this.error = e
-        setTimeout(() => this.saveCode(), 30 * 60)
+        setTimeout(() => this.save(), 30 * 60)
       })
   }, 20 * 60)
 

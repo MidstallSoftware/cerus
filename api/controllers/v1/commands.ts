@@ -60,6 +60,12 @@ export default function () {
               },
               font: { bold: true },
             },
+            {
+              header: 'Failed',
+              key: 'failed',
+              width: 5,
+              font: { bold: true },
+            },
           ]
 
           for (const call of command.calls as APIInteractionCall[]) {
@@ -67,6 +73,7 @@ export default function () {
               id: call.id,
               caller: call.callerId,
               timestamp: call.timestamp,
+              failed: call.failed.toString(),
             })
           }
 
@@ -152,6 +159,7 @@ export default function () {
             botId,
             name,
             premium: 0,
+            options: '[]',
             created: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
           })
 
@@ -204,8 +212,15 @@ export default function () {
         const user: User = res.locals.auth.user
         const obj: PartialModelObject<BotCommand> = {}
 
+        if (typeof req.body.description === 'string')
+          obj.description = req.body.description
         if (typeof req.body.code === 'string') obj.code = req.body.code
         if (typeof req.body.name === 'string') obj.name = req.body.name
+        if (
+          typeof req.body.options === 'object' &&
+          Array.isArray(req.body.options)
+        )
+          obj.options = JSON.stringify(req.body.options)
 
         if (Object.keys(obj).length === 0) {
           throw new Error('No data was set to update')
