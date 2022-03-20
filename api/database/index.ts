@@ -51,7 +51,12 @@ export async function init(): Promise<Knex> {
       },
       bots: (table) => {
         table.increments('id').primary().unsigned()
-        table.foreign('ownerId').references('id').inTable('users')
+        table
+          .integer('ownerId')
+          .unsigned()
+          .notNullable()
+          .references('id')
+          .inTable('users')
         table.string('discordId').notNullable().unique()
         table.string('token').notNullable().unique()
         table.boolean('premium').defaultTo(false)
@@ -60,14 +65,24 @@ export async function init(): Promise<Knex> {
       botMessages: (table) => {
         table.increments('id').primary().unsigned()
         table.string('regex').notNullable()
-        table.foreign('botId').references('id').inTable('bots')
+        table
+          .integer('botId')
+          .unsigned()
+          .notNullable()
+          .references('id')
+          .inTable('bots')
         table.text('code').nullable()
         table.dateTime('created').notNullable()
       },
       botCommands: (table) => {
         table.increments('id').primary().unsigned()
         table.string('name').notNullable()
-        table.foreign('botId').references('id').inTable('bots')
+        table
+          .integer('botId')
+          .unsigned()
+          .notNullable()
+          .references('id')
+          .inTable('bots')
         table.boolean('premium').defaultTo(false)
         table.json('options').defaultTo('[]')
         table.text('description').nullable()
@@ -76,7 +91,12 @@ export async function init(): Promise<Knex> {
       },
       botDataStores: (table) => {
         table.increments('id').primary().unsigned()
-        table.foreign('botId').references('id').inTable('bots')
+        table
+          .integer('botId')
+          .unsigned()
+          .notNullable()
+          .references('id')
+          .inTable('bots')
         table.string('key').notNullable()
         table.text('value').nullable()
         table.dateTime('created').notNullable()
@@ -94,8 +114,18 @@ export async function init(): Promise<Knex> {
       },
       botCalls: (table) => {
         table.increments('id').primary().unsigned()
-        table.foreign('commandId').references('id').inTable('botCommands')
-        table.foreign('messageId').references('id').inTable('botMessages')
+        table
+          .integer('commandId')
+          .unsigned()
+          .notNullable()
+          .references('id')
+          .inTable('botCommands')
+        table
+          .integer('messageId')
+          .unsigned()
+          .notNullable()
+          .references('id')
+          .inTable('botMessages')
         table.string('result').nullable()
         table.string('errors').nullable()
         table.string('messages').nullable()
