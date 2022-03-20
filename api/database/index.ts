@@ -21,7 +21,8 @@ const config: Record<string, Knex.Config> = {
     useNullAsDefault: true,
     debug: !production,
     connection: {
-      database: process.env.MYSQL_DB,
+      db: process.env.MYSQL_DATABASE,
+      database: process.env.MYSQL_DATABASE,
       host: process.env.MYSQL_HOST,
       user: process.env.MYSQL_USER,
       password: process.env.MYSQL_PASSWORD,
