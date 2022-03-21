@@ -4,8 +4,8 @@ import Stripe from 'stripe'
 import fetch from 'node-fetch'
 import { APIUser } from 'discord-api-types/v9'
 import User from '../database/entities/user'
-import { createSingleQueryCache } from '../utils'
 import { DI } from '../di'
+import { createQueryCache } from '../utils'
 
 export async function checkUser(header: string): Promise<User> {
   const self = (await (
@@ -17,13 +17,13 @@ export async function checkUser(header: string): Promise<User> {
   ).json()) as APIUser
 
   const username = `${self.username}#${self.discriminator}`
+  const userCache = createQueryCache(
+    User,
+    User.query().where('discordId', self.id)
+  )
+  const user = (await userCache.read())[0]
 
-  try {
-    const user = await createSingleQueryCache(
-      User,
-      User.query().findOne('discordId', self.id)
-    ).read()
-
+  if (typeof user !== 'undefined') {
     const customer: Stripe.Customer = (await DI.stripe.customers.retrieve(
       user.customerId
     )) as Stripe.Response<Stripe.Customer>
@@ -42,7 +42,7 @@ export async function checkUser(header: string): Promise<User> {
     if (Object.keys(dbUpdate).length > 0)
       return await user.$query().patchAndFetch(dbUpdate)
     return user
-  } catch {
+  } else {
     const customers = await DI.stripe.customers.list({
       email: self.email,
     })
@@ -54,12 +54,15 @@ export async function checkUser(header: string): Promise<User> {
           })
         : customers.data[0]
 
-    return await User.query().insertGraphAndFetch({
+    const user = await User.query().insertGraphAndFetch({
       discordId: self.id,
       email: self.email,
       type: 'default',
       customerId: customer.id,
       created: utcToZonedTime(Date.now(), 'Etc/UTC'),
     })
+
+    await userCache.invalidate()
+    return user
   }
 }
