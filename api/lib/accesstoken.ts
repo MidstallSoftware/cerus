@@ -23,7 +23,7 @@ export async function checkAccessToken(header: string): Promise<AccessToken> {
     })
   } catch {
     const t = await cache.read()
-    t[0].user = user
+    if (typeof t !== 'undefined') t[0].user = user
     return t[0]
   }
 

@@ -7,7 +7,7 @@
     </v-row>
     <v-row>
       <v-col cols="12">
-        <v-alert v-if="typeof userInfo != 'object'" type="success" dense>
+        <v-alert v-show="typeof userInfo != 'object'" type="success" dense>
           {{ $t('loading') }}
         </v-alert>
         <v-card>

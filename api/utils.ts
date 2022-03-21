@@ -104,7 +104,7 @@ export function createQueryCache<M extends Model>(
       return v
     },
     read(data: string): Promise<M[]> {
-      const values = JSON.parse(data) as any[]
+      const values = JSON.parse(data || '[]') as any[]
       const models = values.map((value) => OModel.fromJson(value))
       return Promise.resolve(models as M[])
     },
