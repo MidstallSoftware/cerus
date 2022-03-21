@@ -37,12 +37,12 @@ export default definedModule(
             botId: mod.instance.entry.id,
             key,
             value: JSON.stringify(value),
-            created: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
-            updated: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
+            created: utcToZonedTime(Date.now(), 'Etc/UTC'),
+            updated: utcToZonedTime(Date.now(), 'Etc/UTC'),
           })
         } else {
           await multiStore[0].$query().patch({
-            updated: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
+            updated: utcToZonedTime(Date.now(), 'Etc/UTC'),
             value: JSON.stringify(value),
           })
         }
@@ -65,6 +65,10 @@ export default definedModule(
           BotDataStore.query().where('botId', mod.instance.entry.id)
         ).read()
         return value.map((v) => v.key)
+      },
+      async invalidateCache(key: string) {
+        const cacheStore = createStore(mod, key)
+        await cacheStore.invalidate()
       },
       async delete(key: string): Promise<boolean> {
         return (

@@ -51,7 +51,7 @@ export default function () {
           const msg = await BotMessage.query().insertGraphAndFetch({
             botId,
             regex,
-            created: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
+            created: utcToZonedTime(Date.now(), 'Etc/UTC'),
           })
 
           res.json(new BaseMessage(transformMessage(msg), 'messages:create'))

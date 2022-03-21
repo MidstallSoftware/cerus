@@ -1,6 +1,8 @@
-import { Model } from 'objection'
+import { Model, Pojo } from 'objection'
 import Bot from './bot'
 import BotCall from './botcall'
+
+const TIME_COLUMNS = ['created']
 
 export default class BotCommand extends Model {
   id!: number
@@ -9,10 +11,33 @@ export default class BotCommand extends Model {
   botId!: number
   premium!: number
   bot!: Bot
-  created!: number
+  created!: number | string | Date
   calls!: BotCall[]
   options: string
   description!: string
+
+  $parseDatabaseJson(json: Pojo) {
+    json = super.$parseDatabaseJson(json)
+    TIME_COLUMNS.forEach((key) => {
+      if (!(json[key] instanceof Date)) {
+        json[key] = new Date(json[key])
+      }
+    })
+    return json
+  }
+
+  $formatDatabaseJson(json: Pojo) {
+    json = super.$formatDatabaseJson(json)
+    TIME_COLUMNS.forEach((key) => {
+      if (json[key] instanceof Date) {
+        json[key] = (json[key] as Date)
+          .toISOString()
+          .replace('T', ' ')
+          .replace('Z', '')
+      }
+    })
+    return json
+  }
 
   static tableName = 'botCommands'
 

@@ -7,8 +7,9 @@ Commands are coded in Lua with the ability to get premium features such as a cac
 
 ### Per Command
 
-- Database
+- Data Storage (with caching)
 - Cache
+- Analytics
 
 ### Per Bot
 

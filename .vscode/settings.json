@@ -11,7 +11,7 @@
         "authProtocol": "default"
       },
       "previewLimit": 50,
-      "server": "172.27.03",
+      "server": "172.20.0.2",
       "port": 3306,
       "driver": "MariaDB",
       "name": "Cerus Docker",

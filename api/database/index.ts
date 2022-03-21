@@ -29,11 +29,17 @@ const config: Record<string, Knex.Config> = {
   },
 }
 
+const getConfig = (): Knex.Config => {
+  if (!production && process.env.USE_MYSQL) return { ...config.production }
+  return config[env]
+}
+
 export async function init(): Promise<Knex> {
   await waitOn({ resources: ['tcp:' + process.env.MYSQL_HOST + ':3306'] })
 
-  winston.debug(`Using knex configuration ${JSON.stringify(config[env])}`)
-  const knex = createKnex(config[env])
+  const cfg = getConfig()
+  winston.debug(`Using knex configuration ${JSON.stringify(cfg)}`)
+  const knex = createKnex(cfg)
   Model.knex(knex)
 
   const tables: Record<string, (tableBuilder: Knex.CreateTableBuilder) => any> =

@@ -1,13 +1,15 @@
 import { APIUser } from 'discord-api-types/v9'
 import { Client } from 'discord.js'
-import { Model } from 'objection'
+import { Model, Pojo } from 'objection'
 import BotCommand from './botcommand'
 import BotMessage from './botmessage'
 import User from './user'
 
+const TIME_COLUMNS = ['created']
+
 export default class Bot extends Model {
   id!: number
-  created!: number
+  created!: number | string | Date
   ownerId!: number
   owner!: User
   discordId!: string
@@ -15,6 +17,29 @@ export default class Bot extends Model {
   premium!: number
   commands!: BotCommand[]
   messages!: BotMessage[]
+
+  $parseDatabaseJson(json: Pojo) {
+    json = super.$parseDatabaseJson(json)
+    TIME_COLUMNS.forEach((key) => {
+      if (!(json[key] instanceof Date)) {
+        json[key] = new Date(json[key])
+      }
+    })
+    return json
+  }
+
+  $formatDatabaseJson(json: Pojo) {
+    json = super.$formatDatabaseJson(json)
+    TIME_COLUMNS.forEach((key) => {
+      if (json[key] instanceof Date) {
+        json[key] = (json[key] as Date)
+          .toISOString()
+          .replace('T', ' ')
+          .replace('Z', '')
+      }
+    })
+    return json
+  }
 
   fetch(): Promise<APIUser> {
     return new Promise((resolve, reject) => {

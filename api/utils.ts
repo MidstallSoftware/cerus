@@ -16,7 +16,10 @@ export function getInt(
   return v
 }
 
-export function fixDate(dt: number) {
+export function fixDate(dt: number | string | Date) {
+  if (dt instanceof Date) return dt
+  if (typeof dt === 'string') return new Date(dt)
+
   const d = new Date()
   d.setTime(dt)
   return d
@@ -63,6 +66,7 @@ export async function setCache<T>(
 export interface Cache<T> {
   write(data: T): Promise<void>
   read(): Promise<T>
+  invalidate(): Promise<boolean>
 }
 
 export function createCache<T>(key: string, opts: CacheOptions<T>): Cache<T> {
@@ -72,6 +76,9 @@ export function createCache<T>(key: string, opts: CacheOptions<T>): Cache<T> {
     },
     read(): Promise<T> {
       return getCache(key, opts)
+    },
+    async invalidate(): Promise<boolean> {
+      return (await DI.redis.del(key)) > 0
     },
   }
 }

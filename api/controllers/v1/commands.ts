@@ -160,7 +160,7 @@ export default function () {
             name,
             premium: 0,
             options: '[]',
-            created: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
+            created: utcToZonedTime(Date.now(), 'Etc/UTC'),
           })
 
           res.json(new BaseMessage(transformCommand(cmd), 'commands:create'))

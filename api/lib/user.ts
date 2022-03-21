@@ -59,7 +59,7 @@ export async function checkUser(header: string): Promise<User> {
       email: self.email,
       type: 'default',
       customerId: customer.id,
-      created: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
+      created: utcToZonedTime(Date.now(), 'Etc/UTC'),
     })
   }
 }

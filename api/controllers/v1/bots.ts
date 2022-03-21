@@ -105,7 +105,7 @@ export default function () {
 
             Bot.query()
               .insertGraph({
-                created: utcToZonedTime(Date.now(), 'Etc/UTC').getTime(),
+                created: utcToZonedTime(Date.now(), 'Etc/UTC'),
                 ownerId: user.id,
                 discordId: discordId.toString(),
                 token: token.toString(),
