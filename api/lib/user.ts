@@ -21,7 +21,7 @@ export async function checkUser(header: string): Promise<User> {
     User,
     User.query().where('discordId', self.id)
   )
-  const user = (await userCache.read())[0]
+  let user = (await userCache.read())[0]
 
   if (typeof user !== 'undefined') {
     const customer: Stripe.Customer = (await DI.stripe.customers.retrieve(
@@ -54,13 +54,17 @@ export async function checkUser(header: string): Promise<User> {
           })
         : customers.data[0]
 
-    const user = await User.query().insertGraphAndFetch({
-      discordId: self.id,
-      email: self.email,
-      type: 'default',
-      customerId: customer.id,
-      created: utcToZonedTime(Date.now(), 'Etc/UTC'),
-    })
+    try {
+      user = await User.query().insertGraphAndFetch({
+        discordId: self.id,
+        email: self.email,
+        type: 'default',
+        customerId: customer.id,
+        created: utcToZonedTime(Date.now(), 'Etc/UTC'),
+      })
+    } catch {
+      return (await userCache.read())[0]
+    }
 
     await userCache.invalidate()
     return user
