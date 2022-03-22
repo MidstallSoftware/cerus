@@ -141,6 +141,9 @@ import { BaseMessageInterface } from '~/api/message'
       ],
     }
   },
+  mounted() {
+    ;(this as PageIndex).loadStats()
+  },
 })
 export default class PageIndex extends Vue {
   stats: object = {
@@ -204,10 +207,6 @@ export default class PageIndex extends Vue {
       process: uptime.process,
       system: uptime.system,
     }
-  }
-
-  created() {
-    this.loadStats()
   }
 }
 </script>

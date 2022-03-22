@@ -42,6 +42,7 @@ export default {
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
   store: true,
+  ssr: true,
 
   serverMiddleware: [{ path: '/api', handler: '~/api/index.ts' }],
 

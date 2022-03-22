@@ -139,6 +139,36 @@ import { APIBot, APICommand, APIInteractionCall } from '~/api/types'
   },
   middleware: 'auth',
   layout: 'user',
+  mounted() {
+    this.$axios
+      .$get(`/api/v1/commands?id=${this.$route.params.cmd}`)
+      .then((msg: BaseMessageInterface) => {
+        if (msg.data.premium)
+          msg.data.calls = msg.data.calls.map((call: APIInteractionCall) => {
+            call.timestamp = new Date(call.timestamp)
+            return call
+          })(this as PageUserBotCommandSlug).command = msg.data
+      })
+      .catch((e) =>
+        this.$nuxt.error({
+          statusCode: 501,
+          message: e.message,
+        })
+      )
+
+    this.$axios
+      .$get(`/api/v1/bots?id=${this.$route.params.bot}`)
+      .then((msg: BaseMessageInterface) => {
+        msg.data.created = new Date(msg.data.created)
+        ;(this as PageUserBotCommandSlug).bot = msg.data
+      })
+      .catch((e) =>
+        this.$nuxt.error({
+          statusCode: 501,
+          message: e.message,
+        })
+      )
+  },
 })
 export default class PageUserBotCommandSlug extends Vue {
   command: APICommand = { code: '', calls: [] } as APICommand
@@ -228,39 +258,6 @@ export default class PageUserBotCommandSlug extends Vue {
         })
         .catch((e) => (this.error = e))
     }
-  }
-
-  created() {
-    this.$axios
-      .$get(`/api/v1/commands?id=${this.$route.params.cmd}`)
-      .then((msg: BaseMessageInterface) => {
-        if (msg.data.premium)
-          msg.data.calls = msg.data.calls.map((call: APIInteractionCall) => {
-            call.timestamp = new Date(call.timestamp)
-            return call
-          })
-        this.command = msg.data
-        this.$forceUpdate()
-      })
-      .catch((e) =>
-        this.$nuxt.error({
-          statusCode: 501,
-          message: e.message,
-        })
-      )
-
-    this.$axios
-      .$get(`/api/v1/bots?id=${this.$route.params.bot}`)
-      .then((msg: BaseMessageInterface) => {
-        msg.data.created = new Date(msg.data.created)
-        this.bot = msg.data
-      })
-      .catch((e) =>
-        this.$nuxt.error({
-          statusCode: 501,
-          message: e.message,
-        })
-      )
   }
 }
 </script>

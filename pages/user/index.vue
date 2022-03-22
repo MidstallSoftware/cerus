@@ -54,18 +54,17 @@ interface UserInfo {}
       ],
     }
   },
+  mounted() {
+    ;(this as PageUserIndex).error = null
+    this.$axios
+      .get('/api/v1/user')
+      .then((res) => ((this as PageUserIndex).userInfo = res.data.data))
+      .catch((e) => ((this as PageUserIndex).error = e))
+  },
 })
 export default class PageUserIndex extends Vue {
   userInfo: UserInfo = {}
   error: Error = null
-
-  created() {
-    this.error = null
-    this.$axios
-      .get('/api/v1/user')
-      .then((res) => (this.userInfo = res.data.data))
-      .catch((e) => (this.error = e))
-  }
 
   deleteUser() {
     this.error = null

@@ -4,13 +4,7 @@
       <v-app-bar-title>{{ title }}</v-app-bar-title>
     </v-app-bar>
 
-    <v-navigation-drawer
-      v-if="isBotView"
-      v-model="drawer"
-      app
-      permanent
-      width="13vw"
-    >
+    <v-navigation-drawer v-if="isBotView" app permanent width="13vw">
       <v-navigation-drawer
         v-model="drawer"
         absolute
@@ -119,10 +113,25 @@ import { Component, Vue } from 'vue-property-decorator'
 import { BaseMessageInterface } from '~/api/message'
 import { APIBot, APICommand } from '~/api/types'
 
-@Component
+@Component({
+  mounted() {
+    if ((this as LayoutUser).isBotView || (this as LayoutUser).isCommandView) {
+      this.$axios
+        .$get(`/api/v1/bots?id=${this.$route.params.bot}`)
+        .then((msg: BaseMessageInterface) => {
+          ;(this as LayoutUser).bot = msg.data
+        })
+        .catch((e) =>
+          this.$nuxt.error({
+            statusCode: 501,
+            message: e.message,
+          })
+        )
+    }
+  },
+})
 export default class LayoutUser extends Vue {
   bot: APIBot = { commands: [], messages: [] } as APIBot
-  drawer: any = true
 
   get command(): APICommand | undefined {
     if (!this.isCommandView) return undefined
@@ -176,22 +185,6 @@ export default class LayoutUser extends Vue {
       if (this.$route.name.split('___', 2)[0] === str) return fn()
     }
     return ''
-  }
-
-  created() {
-    if (this.isBotView || this.isCommandView) {
-      this.$axios
-        .$get(`/api/v1/bots?id=${this.$route.params.bot}`)
-        .then((msg: BaseMessageInterface) => {
-          this.bot = msg.data
-        })
-        .catch((e) =>
-          this.$nuxt.error({
-            statusCode: 501,
-            message: e.message,
-          })
-        )
-    }
   }
 }
 </script>

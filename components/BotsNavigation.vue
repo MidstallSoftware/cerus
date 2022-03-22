@@ -68,14 +68,14 @@
 import { Component, Vue } from 'vue-property-decorator'
 import { APIBot } from '~/api/types'
 
-@Component
-export default class BotsNavigation extends Vue {
-  bots: APIBot[] = []
-
-  created() {
+@Component({
+  mounted() {
     this.$axios
       .get('/api/v1/bots/list')
-      .then((res) => (this.bots = res.data.data.list))
-  }
+      .then((res) => ((this as BotsNavigation).bots = res.data.data.list))
+  },
+})
+export default class BotsNavigation extends Vue {
+  bots: APIBot[] = []
 }
 </script>

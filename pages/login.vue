@@ -42,12 +42,11 @@ import { Vue, Component } from 'vue-property-decorator'
       ],
     }
   },
+  mounted() {
+    if (this.$auth.loggedIn && process.client) window.location.assign('/user')
+  },
 })
 export default class PageLogin extends Vue {
-  created() {
-    if (this.$auth.loggedIn && process.client) window.location.assign('/user')
-  }
-
   doLogin() {
     this.$auth.loginWith('discord')
   }

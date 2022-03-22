@@ -54,8 +54,8 @@ import { APIBot, APIMessage } from '~/api/types'
   head() {
     return {
       title: this.$t('page-title', {
-        messageName: (this as PageUserBotCommandSlug).message.regex,
-        botName: (this as PageUserBotCommandSlug).bot.name,
+        messageName: (this as PageUserBotMessageSlug).message.regex,
+        botName: (this as PageUserBotMessageSlug).bot.name,
       }).toString(),
     }
   },
@@ -64,8 +64,34 @@ import { APIBot, APIMessage } from '~/api/types'
   },
   middleware: 'auth',
   layout: 'user',
+  mounted() {
+    this.$axios
+      .$get(`/api/v1/messages?id=${this.$route.params.msg}`)
+      .then((msg: BaseMessageInterface) => {
+        ;(this as PageUserBotMessageSlug).message = msg.data
+      })
+      .catch((e) =>
+        this.$nuxt.error({
+          statusCode: 501,
+          message: e.message,
+        })
+      )
+
+    this.$axios
+      .$get(`/api/v1/bots?id=${this.$route.params.bot}`)
+      .then((msg: BaseMessageInterface) => {
+        msg.data.created = new Date(msg.data.created)
+        ;(this as PageUserBotMessageSlug).bot = msg.data
+      })
+      .catch((e) =>
+        this.$nuxt.error({
+          statusCode: 501,
+          message: e.message,
+        })
+      )
+  },
 })
-export default class PageUserBotCommandSlug extends Vue {
+export default class PageUserBotMessageSlug extends Vue {
   message: APIMessage = { code: '' } as unknown as APIMessage
   bot: APIBot = { premium: false } as APIBot
   saving: boolean = false
@@ -98,33 +124,6 @@ export default class PageUserBotCommandSlug extends Vue {
 
   highlighter(code: string) {
     return Prism.highlight(code, Prism.languages.lua, 'lua')
-  }
-
-  created() {
-    this.$axios
-      .$get(`/api/v1/messages?id=${this.$route.params.msg}`)
-      .then((msg: BaseMessageInterface) => {
-        this.message = msg.data
-      })
-      .catch((e) =>
-        this.$nuxt.error({
-          statusCode: 501,
-          message: e.message,
-        })
-      )
-
-    this.$axios
-      .$get(`/api/v1/bots?id=${this.$route.params.bot}`)
-      .then((msg: BaseMessageInterface) => {
-        msg.data.created = new Date(msg.data.created)
-        this.bot = msg.data
-      })
-      .catch((e) =>
-        this.$nuxt.error({
-          statusCode: 501,
-          message: e.message,
-        })
-      )
   }
 }
 </script>

@@ -36,6 +36,20 @@ import { Vue, Component } from 'vue-property-decorator'
       },
     ],
   },
+  mounted() {
+    if (typeof this.$route.query.id === 'undefined') {
+      this.$nuxt.error({
+        statusCode: 404,
+        message: 'No session was specified',
+      })
+    }
+    if (typeof this.$route.query.url === 'undefined') {
+      this.$nuxt.error({
+        statusCode: 404,
+        message: 'No URL was specified',
+      })
+    }
+  },
 })
 export default class PageBillingSuccess extends Vue {
   error: Error = null
@@ -52,21 +66,6 @@ export default class PageBillingSuccess extends Vue {
           window.location.assign(res.data.data.url)
         })
         .catch((e) => (this.error = e))
-    }
-  }
-
-  created() {
-    if (typeof this.$route.query.id === 'undefined') {
-      this.$nuxt.error({
-        statusCode: 404,
-        message: 'No session was specified',
-      })
-    }
-    if (typeof this.$route.query.url === 'undefined') {
-      this.$nuxt.error({
-        statusCode: 404,
-        message: 'No URL was specified',
-      })
     }
   }
 }

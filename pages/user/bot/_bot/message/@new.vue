@@ -28,6 +28,14 @@ import { Component, Vue } from 'vue-property-decorator'
   },
   middleware: 'auth',
   layout: 'user',
+  mounted() {
+    this.$axios.$get(`/api/v1/bots?id=${this.$route.params.bot}`).catch((e) =>
+      this.$nuxt.error({
+        statusCode: 501,
+        message: e.message,
+      })
+    )
+  },
 })
 export default class PageUserBotMessageNew extends Vue {
   valid: boolean = false
@@ -52,15 +60,6 @@ export default class PageUserBotMessageNew extends Vue {
         })
         .catch((e) => (this.error = e))
     }
-  }
-
-  created() {
-    this.$axios.$get(`/api/v1/bots?id=${this.$route.params.bot}`).catch((e) =>
-      this.$nuxt.error({
-        statusCode: 501,
-        message: e.message,
-      })
-    )
   }
 }
 </script>
