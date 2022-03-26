@@ -63,7 +63,7 @@ export default class PageBillingSuccess extends Vue {
           url: this.$route.query.url,
         })
         .then((res) => {
-          window.location.assign(res.data.data.url)
+          this.$router.push(res.data.data.url)
         })
         .catch((e) => (this.error = e))
     }

@@ -60,7 +60,7 @@ export default class PageUserBotNew extends Vue {
       this.$axios
         .post(`/api/v1/bots?discordId=${this.id}&token=${this.token}`)
         .then((res) => {
-          window.location.assign('/user/bot/' + res.data.data.id)
+          this.$router.push('/user/bot/' + res.data.data.id)
         })
         .catch((e) => (this.error = e))
     }

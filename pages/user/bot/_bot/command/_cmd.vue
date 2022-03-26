@@ -124,6 +124,7 @@ import { PrismEditor } from 'vue-prism-editor'
 import { Vue, Component } from 'vue-property-decorator'
 import { BaseMessageInterface } from '~/api/message'
 import { APIBot, APICommand, APIInteractionCall } from '~/api/types'
+import Analytics from '~/components/Analytics.vue'
 
 @Component({
   head() {
@@ -136,6 +137,7 @@ import { APIBot, APICommand, APIInteractionCall } from '~/api/types'
   },
   components: {
     PrismEditor,
+    Analytics,
   },
   middleware: 'auth',
   layout: 'user',
@@ -210,7 +212,7 @@ export default class PageUserBotCommandSlug extends Vue {
     this.$axios
       .$delete(`/api/v1/commands?id=${this.$route.params.cmd}`)
       .then(() => {
-        window.location.assign(`/user/bot/${this.$route.params.bot}`)
+        this.$router.replace(`/user/bot/${this.$route.params.bot}`)
       })
       .catch((e) => {
         this.error = e
@@ -254,7 +256,7 @@ export default class PageUserBotCommandSlug extends Vue {
           url: window.location.href,
         })
         .then((res) => {
-          window.location.assign(res.data.data.url)
+          this.$router.push(res.data.data.url)
         })
         .catch((e) => (this.error = e))
     }

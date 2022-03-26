@@ -49,6 +49,7 @@ import { PrismEditor } from 'vue-prism-editor'
 import { Vue, Component } from 'vue-property-decorator'
 import { BaseMessageInterface } from '~/api/message'
 import { APIBot, APIMessage } from '~/api/types'
+import Analytics from '~/components/Analytics.vue'
 
 @Component({
   head() {
@@ -61,6 +62,7 @@ import { APIBot, APIMessage } from '~/api/types'
   },
   components: {
     PrismEditor,
+    Analytics,
   },
   middleware: 'auth',
   layout: 'user',
@@ -115,7 +117,7 @@ export default class PageUserBotMessageSlug extends Vue {
     this.$axios
       .$delete(`/api/v1/messages?id=${this.$route.params.msg}`)
       .then(() => {
-        window.location.assign(`/user/bot/${this.$route.params.bot}`)
+        this.$router.replace(`/user/bot/${this.$route.params.bot}`)
       })
       .catch((e) => {
         this.error = e

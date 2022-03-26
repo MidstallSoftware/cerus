@@ -54,7 +54,7 @@ export default class PageUserBotMessageNew extends Vue {
           }&regex=${encodeURIComponent(this.name)}`
         )
         .then((res) => {
-          window.location.assign(
+          this.$router.push(
             `/user/bot/${this.$route.params.bot}/message/${res.data.data.id}`
           )
         })

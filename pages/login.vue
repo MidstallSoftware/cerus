@@ -43,7 +43,8 @@ import { Vue, Component } from 'vue-property-decorator'
     }
   },
   mounted() {
-    if (this.$auth.loggedIn && process.client) window.location.assign('/user')
+    if (this.$auth.loggedIn && !this.$nuxt.isOnline)
+      this.$nuxt.$router.replace('/user')
   },
 })
 export default class PageLogin extends Vue {

@@ -26,7 +26,13 @@ export default function (): Router {
       type: 'object',
       properties: {
         botId: { type: 'string', required: true, pattern: /[0-9]+/ },
-        name: { type: 'string', required: true, minLength: 1 },
+        name: {
+          type: 'string',
+          required: true,
+          minLength: 1,
+          maxLength: 32,
+          pattern: /^[\P{Lu}\p{N}_-]+$/u,
+        },
       },
     }),
     controller.create
@@ -57,9 +63,15 @@ export default function (): Router {
       type: 'object',
       minProperties: 1,
       properties: {
-        name: { type: 'string', required: false, minLength: 1 },
+        name: {
+          type: 'string',
+          required: false,
+          minLength: 1,
+          maxLength: 32,
+          pattern: /^[\P{Lu}\p{N}_-]+$/u,
+        },
         code: { type: 'string', required: false },
-        description: { type: 'string', required: false },
+        description: { type: 'string', required: false, maxLength: 100 },
         options: { type: 'array', required: false },
       },
     }),

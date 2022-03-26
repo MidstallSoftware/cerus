@@ -66,7 +66,6 @@
 <i18n>
 {
   "en": {
-    "page-title": "{name}",
     "info": "Information",
     "premium": "Premium",
     "created": "Created: {value}",
@@ -93,9 +92,7 @@ import { APIBot } from '~/api/types'
 @Component({
   head() {
     return {
-      title: this.$t('page-title', {
-        name: (this as PageUserBotSlug).bot.name,
-      }).toString(),
+      title: (this as PageUserBotSlug).bot.name,
     }
   },
   middleware: 'auth',
@@ -144,7 +141,7 @@ export default class PageUserBotSlug extends Vue {
     this.$axios
       .$delete(`/api/v1/bots?id=${this.$route.params.bot}`)
       .then(() => {
-        window.location.assign(`/user/`)
+        this.$router.push(`/user/`)
       })
       .catch((e) => {
         this.error = e
@@ -178,7 +175,7 @@ export default class PageUserBotSlug extends Vue {
           url: window.location.href,
         })
         .then((res) => {
-          window.location.assign(res.data.data.url)
+          this.$router.push(res.data.data.url)
         })
         .catch((e) => (this.error = e))
     }

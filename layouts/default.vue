@@ -112,7 +112,7 @@
         <Nuxt />
       </v-container>
     </v-main>
-    <v-footer absolute app>
+    <v-footer fixed app>
       <v-card flat tile width="100%" class="text-center">
         <p>
           <v-card-text

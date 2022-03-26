@@ -173,6 +173,15 @@ export default {
     },
   },
 
+  vue: {
+    config: {
+      productionTip: true,
+      devtools: true,
+      silent: false,
+      performance: true,
+    },
+  },
+
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {},
 }

@@ -123,13 +123,13 @@ export async function init(): Promise<Knex> {
         table
           .integer('commandId')
           .unsigned()
-          .notNullable()
+          .nullable()
           .references('id')
           .inTable('botCommands')
         table
           .integer('messageId')
           .unsigned()
-          .notNullable()
+          .nullable()
           .references('id')
           .inTable('botMessages')
         table.string('result').nullable()

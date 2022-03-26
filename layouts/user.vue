@@ -4,90 +4,96 @@
       <v-app-bar-title>{{ title }}</v-app-bar-title>
     </v-app-bar>
 
-    <v-navigation-drawer v-if="isBotView" app permanent width="13vw">
+    <client-only>
+      <v-navigation-drawer v-if="isBotView" app permanent width="13vw">
+        <v-navigation-drawer
+          v-model="drawer"
+          absolute
+          mini-variant
+          mini-variant-width="2.7vw"
+        >
+          <bots-navigation />
+        </v-navigation-drawer>
+        <div class="pl-15">
+          <h2 class="pl-16">{{ bot.name }}</h2>
+          <v-list shaped>
+            <v-list-item link>
+              <a
+                :href="'/user/bot/' + $route.params.bot"
+                class="pl-4 text--primary text-decoration-none"
+                link
+              >
+                <v-list-item-title>{{ $t('bot-info') }}</v-list-item-title>
+              </a>
+            </v-list-item>
+
+            <v-subheader>{{ $t('commands') }}</v-subheader>
+            <v-list-item v-for="command in bot.commands" :key="command.id" link>
+              <a
+                :href="
+                  '/user/bot/' + $route.params.bot + '/command/' + command.id
+                "
+                class="pl-4 text--primary text-decoration-none"
+              >
+                <v-list-item-title>
+                  <p>
+                    <span class="blue-grey--text darken-2--text">/</span>
+                    {{ command.name }}
+                  </p>
+                </v-list-item-title>
+              </a>
+            </v-list-item>
+            <v-list-item link>
+              <a
+                :href="'/user/bot/' + $route.params.bot + '/command/@new'"
+                class="pl-4 text--primary text-decoration-none"
+              >
+                <v-list-item-title
+                  ><i>{{ $t('new-command') }}</i></v-list-item-title
+                >
+              </a>
+            </v-list-item>
+
+            <div v-if="bot.premium">
+              <v-subheader>{{ $t('messages') }}</v-subheader>
+              <v-list-item
+                v-for="message in bot.messages"
+                :key="message.id"
+                link
+              >
+                <a
+                  :href="
+                    '/user/bot/' + $route.params.bot + '/message/' + message.id
+                  "
+                  class="pl-4 text--primary text-decoration-none"
+                >
+                  <v-list-item-title v-text="message.regex" />
+                </a>
+              </v-list-item>
+              <v-list-item link>
+                <a
+                  :href="'/user/bot/' + $route.params.bot + '/message/@new'"
+                  class="pl-4 text--primary text-decoration-none"
+                >
+                  <v-list-item-title
+                    ><i>{{ $t('new-message') }}</i></v-list-item-title
+                  >
+                </a>
+              </v-list-item>
+            </div>
+          </v-list>
+        </div>
+      </v-navigation-drawer>
       <v-navigation-drawer
-        v-model="drawer"
-        absolute
+        v-else
+        app
+        permanent
         mini-variant
         mini-variant-width="2.7vw"
       >
         <bots-navigation />
       </v-navigation-drawer>
-      <div class="pl-15">
-        <h2 class="pl-16">{{ bot.name }}</h2>
-        <v-list shaped>
-          <v-list-item link>
-            <a
-              :href="'/user/bot/' + $route.params.bot"
-              class="pl-4 text--primary text-decoration-none"
-              link
-            >
-              <v-list-item-title>{{ $t('bot-info') }}</v-list-item-title>
-            </a>
-          </v-list-item>
-
-          <v-subheader>{{ $t('commands') }}</v-subheader>
-          <v-list-item v-for="command in bot.commands" :key="command.id" link>
-            <a
-              :href="
-                '/user/bot/' + $route.params.bot + '/command/' + command.id
-              "
-              class="pl-4 text--primary text-decoration-none"
-            >
-              <v-list-item-title>
-                <p>
-                  <span class="blue-grey--text darken-2--text">/</span>
-                  {{ command.name }}
-                </p>
-              </v-list-item-title>
-            </a>
-          </v-list-item>
-          <v-list-item link>
-            <a
-              :href="'/user/bot/' + $route.params.bot + '/command/@new'"
-              class="pl-4 text--primary text-decoration-none"
-            >
-              <v-list-item-title
-                ><i>{{ $t('new-command') }}</i></v-list-item-title
-              >
-            </a>
-          </v-list-item>
-
-          <div v-if="bot.premium">
-            <v-subheader>{{ $t('messages') }}</v-subheader>
-            <v-list-item v-for="message in bot.messages" :key="message.id" link>
-              <a
-                :href="
-                  '/user/bot/' + $route.params.bot + '/message/' + message.id
-                "
-                class="pl-4 text--primary text-decoration-none"
-              >
-                <v-list-item-title v-text="message.regex" />
-              </a>
-            </v-list-item>
-            <v-list-item link>
-              <a
-                :href="'/user/bot/' + $route.params.bot + '/message/@new'"
-                class="pl-4 text--primary text-decoration-none"
-              >
-                <v-list-item-title
-                  ><i>{{ $t('new-message') }}</i></v-list-item-title
-                >
-              </a>
-            </v-list-item>
-          </div>
-        </v-list>
-      </div>
-    </v-navigation-drawer>
-    <v-navigation-drawer
-      v-else
-      app
-      permanent
-      mini-variant
-      mini-variant-width="2.7vw"
-    >
-      <bots-navigation />
-    </v-navigation-drawer>
+    </client-only>
 
     <v-main>
       <v-container fluid>
@@ -112,8 +118,12 @@
 import { Component, Vue } from 'vue-property-decorator'
 import { BaseMessageInterface } from '~/api/message'
 import { APIBot, APICommand } from '~/api/types'
+import BotsNavigation from '~/components/BotsNavigation.vue'
 
 @Component({
+  components: {
+    BotsNavigation,
+  },
   mounted() {
     if ((this as LayoutUser).isBotView || (this as LayoutUser).isCommandView) {
       this.$axios

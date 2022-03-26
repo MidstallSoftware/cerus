@@ -54,7 +54,7 @@ export default class PageUserBotCommandNew extends Vue {
           }&name=${encodeURIComponent(this.name)}`
         )
         .then((res) => {
-          window.location.assign(
+          this.$router.push(
             `/user/bot/${this.$route.params.bot}/command/${res.data.data.id}`
           )
         })
