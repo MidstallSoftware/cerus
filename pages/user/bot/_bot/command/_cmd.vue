@@ -145,11 +145,13 @@ import Analytics from '~/components/Analytics.vue'
     this.$axios
       .$get(`/api/v1/commands?id=${this.$route.params.cmd}`)
       .then((msg: BaseMessageInterface) => {
-        if (msg.data.premium)
+        if (msg.data.premium) {
           msg.data.calls = msg.data.calls.map((call: APIInteractionCall) => {
             call.timestamp = new Date(call.timestamp)
             return call
-          })(this as PageUserBotCommandSlug).command = msg.data
+          })
+        }
+        ;(this as PageUserBotCommandSlug).command = msg.data
       })
       .catch((e) =>
         this.$nuxt.error({
@@ -256,7 +258,7 @@ export default class PageUserBotCommandSlug extends Vue {
           url: window.location.href,
         })
         .then((res) => {
-          this.$router.push(res.data.data.url)
+          window.location.assign(res.data.data.url)
         })
         .catch((e) => (this.error = e))
     }

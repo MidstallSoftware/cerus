@@ -204,10 +204,7 @@ export default function () {
           }
         }
         run()
-          .then(() => {
-            winston.info('Webhook success')
-            res.send()
-          })
+          .then(() => res.send())
           .catch((e) => {
             winston.error(e)
             next(e)
