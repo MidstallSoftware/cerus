@@ -1,6 +1,7 @@
 import { QueryBuilder } from 'objection'
+import BotCall from '../database/entities/botcall'
 import BotMessage from '../database/entities/botmessage'
-import { createSingleQueryCache, fixDate } from '../utils'
+import { createQueryCache, createSingleQueryCache, fixDate } from '../utils'
 import { APIMessage } from '../types'
 import { transformCall } from './call'
 
@@ -18,7 +19,12 @@ export function transformMessage(msg: BotMessage): APIMessage {
 export async function fetchMessage(
   query: QueryBuilder<BotMessage, BotMessage>
 ) {
-  return transformMessage(
-    await createSingleQueryCache(BotMessage, query).read()
-  )
+  const value = await createSingleQueryCache(BotMessage, query).read()
+  const valueCalls = (await createQueryCache(
+    BotCall,
+    value.$relatedQuery('calls')
+  ).read()) as BotCall[]
+
+  value.calls = valueCalls
+  return transformMessage(value)
 }

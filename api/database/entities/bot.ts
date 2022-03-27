@@ -1,5 +1,6 @@
 import { APIUser } from 'discord-api-types/v9'
 import { Model, Pojo } from 'objection'
+import fetch from 'node-fetch'
 import BotCommand from './botcommand'
 import BotMessage from './botmessage'
 import User from './user'
@@ -46,7 +47,7 @@ export default class Bot extends Model {
         Authorization: `Bot ${this.token}`,
       },
     })
-    return resp.json()
+    return (await resp.json()) as APIUser
   }
 
   async getAvatar(): Promise<string> {

@@ -45,6 +45,7 @@ export async function fetchCommand(
     BotCall,
     value.$relatedQuery('calls')
   ).read()) as BotCall[]
+
   value.calls = valueCalls
   return transformCommand(value)
 }

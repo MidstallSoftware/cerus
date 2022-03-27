@@ -142,6 +142,7 @@ import BotsNavigation from '~/components/BotsNavigation.vue'
 })
 export default class LayoutUser extends Vue {
   bot: APIBot = { commands: [], messages: [] } as APIBot
+  drawer: boolean = true
 
   get command(): APICommand | undefined {
     if (!this.isCommandView) return undefined

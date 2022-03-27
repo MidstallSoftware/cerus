@@ -28,6 +28,7 @@ export default class BotInstance {
           let messages = ''
           let errors = ''
           let results = ''
+          let failed = false
           defineContext(this, hook.code, {
             premium: true,
             type: 'message',
@@ -38,36 +39,13 @@ export default class BotInstance {
               messages += args.map((v) => v.toString()).join('\t') + '\n'
             },
           })
-            .then(async (result) => {
+            .then((result) => {
               results = JSON.stringify(result)
-              await BotCall.query().insert({
-                messageId: hook.id,
-                type: 'message',
-                channelId: msg.channelId,
-                guildId: msg.guildId,
-                failed: false,
-                dateTime: utcToZonedTime(Date.now(), 'Etc/UTC'),
-                callerId: msg.member.id,
-                result: results,
-                errors,
-                messages,
-              })
             })
             .catch((e) => {
+              failed = true
               errors += e.toString() + '\n'
               winston.error(e)
-              BotCall.query().insert({
-                messageId: hook.id,
-                type: 'message',
-                channelId: msg.channelId,
-                guildId: msg.guildId,
-                dateTime: utcToZonedTime(Date.now(), 'Etc/UTC'),
-                callerId: msg.member.id,
-                result: results,
-                failed: true,
-                errors,
-                messages,
-              })
               msg.reply({
                 embeds: [
                   new MessageEmbed()
@@ -81,6 +59,27 @@ export default class BotInstance {
                 ],
               })
             })
+            .finally(() =>
+              setImmediate(async () => {
+                winston.debug('Adding bot call')
+                try {
+                  await BotCall.query().insert({
+                    messageId: hook.id,
+                    type: 'message',
+                    channelId: msg.channelId,
+                    guildId: msg.guildId,
+                    failed,
+                    dateTime: utcToZonedTime(Date.now(), 'Etc/UTC'),
+                    callerId: msg.member.id,
+                    result: results,
+                    errors,
+                    messages,
+                  })
+                } catch (e) {
+                  winston.error(e)
+                }
+              })
+            )
         }
       }
     })
@@ -100,6 +99,7 @@ export default class BotInstance {
         let messages = ''
         let errors = ''
         let results = ''
+        let failed = false
 
         defineContext(this, cmd.code, {
           premium: cmd.premium === 1,
@@ -113,18 +113,6 @@ export default class BotInstance {
         })
           .then(async (result) => {
             results = JSON.stringify(result)
-            await BotCall.query().insert({
-              commandId: cmd.id,
-              type: 'command',
-              dateTime: utcToZonedTime(Date.now(), 'Etc/UTC'),
-              channelId: inter.channelId,
-              guildId: inter.guildId,
-              callerId: inter.member.user.id,
-              result: results,
-              failed: false,
-              errors,
-              messages,
-            })
             if (cmd.premium === 1) {
               const subs = await DI.stripe.subscriptions.list({
                 customer: this.entry.owner.customerId,
@@ -145,33 +133,45 @@ export default class BotInstance {
             }
           })
           .catch((e) => {
+            failed = true
             errors += e.toString() + '\n'
             winston.error(e)
-            BotCall.query().insert({
-              commandId: cmd.id,
-              type: 'command',
-              channelId: inter.channelId,
-              guildId: inter.guildId,
-              dateTime: utcToZonedTime(Date.now(), 'Etc/UTC'),
-              result: results,
-              failed: true,
-              errors,
-              messages,
-            })
-            if (!inter.replied)
-              inter.reply({
-                embeds: [
-                  new MessageEmbed()
-                    .setTitle(
-                      `${this.client.user.username} - ${cmd.name}: Failed to run`
-                    )
-                    .setColor('RED')
-                    .setDescription(
-                      `Failed to run interaction:\n${codeBlock(e.message)}`
-                    ),
-                ],
-              })
+            const r = {
+              embeds: [
+                new MessageEmbed()
+                  .setTitle(
+                    `${this.client.user.username} - ${cmd.name}: Failed to run`
+                  )
+                  .setColor('RED')
+                  .setDescription(
+                    `Failed to run interaction:\n${codeBlock(e.message)}`
+                  ),
+              ],
+            }
+            if (!inter.replied) inter.reply(r)
+            else inter.channel.send(r)
           })
+          .finally(() =>
+            setImmediate(async () => {
+              winston.debug('Adding bot call')
+              try {
+                await BotCall.query().insert({
+                  commandId: cmd.id,
+                  type: 'command',
+                  dateTime: utcToZonedTime(Date.now(), 'Etc/UTC'),
+                  channelId: inter.channelId,
+                  guildId: inter.guildId,
+                  callerId: inter.member.user.id,
+                  result: results,
+                  failed,
+                  errors,
+                  messages,
+                })
+              } catch (e) {
+                winston.error(e)
+              }
+            })
+          )
       }
     })
   }

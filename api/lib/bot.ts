@@ -5,8 +5,8 @@ import BotMessage from '../database/entities/botmessage'
 import { createQueryCache, createSingleQueryCache, fixDate } from '../utils'
 import { APIBot } from '../types'
 import { DI } from '../di'
-import { transformMessage } from './message'
-import { transformCommand } from './command'
+import { fetchMessage } from './message'
+import { fetchCommand } from './command'
 
 export async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
   const cache = createSingleQueryCache(Bot, query, 'bots')
@@ -15,12 +15,12 @@ export async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
 
   const cacheMessages = createQueryCache(
     BotMessage,
-    BotMessage.query().where('botId', value.id),
+    BotMessage.query().where('botId', value.id).select('id'),
     'messages'
   )
   const cacheCommands = createQueryCache(
     BotCommand,
-    BotCommand.query().where('botId', value.id),
+    BotCommand.query().where('botId', value.id).select('id'),
     'commands'
   )
 
@@ -35,7 +35,11 @@ export async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
     running: DI.bots.has(value.id),
     created: fixDate(value.created),
     premium: value.premium === 1,
-    messages: valueMessages.map(transformMessage),
-    commands: valueCommands.map(transformCommand),
+    messages: await Promise.all(
+      valueMessages.map((v) => fetchMessage(v.$query()))
+    ),
+    commands: await Promise.all(
+      valueCommands.map((v) => fetchCommand(v.$query()))
+    ),
   }
 }
