@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { utcToZonedTime } from 'date-fns-tz'
-import { Client } from 'discord.js'
+import fetch from 'node-fetch'
+import { APIUser } from 'discord-api-types/v9'
 import { PartialModelObject } from 'objection'
 import {
   createPageQueryCache,
@@ -94,47 +95,39 @@ export default function () {
         const { discordId, token } = req.query
         const user: User = res.locals.auth.user
 
-        const client = new Client({
-          intents: [],
+        fetch('https://discord.com/api/users/@me', {
+          headers: {
+            Authorization: `Bot ${token}`,
+          },
         })
-
-        client.on('ready', () => {
-          try {
-            if (!client.user.bot)
+          .then(async (resp) => {
+            const userBot = (await resp.json()) as APIUser
+            if (!userBot.bot)
               throw new Error('Cannot add a non-bot user as a bot')
 
-            Bot.query()
-              .insertGraph({
-                created: utcToZonedTime(Date.now(), 'Etc/UTC'),
-                ownerId: user.id,
-                discordId: discordId.toString(),
-                token: token.toString(),
-              })
-              .then(async (bot) => {
-                invalidateCacheWithPrefix('bots')
-                  .then(() => {})
-                  .catch((e) => winston.error(e))
-                res.json(
-                  new BaseMessage(
-                    {
-                      id: bot.id,
-                      discordId: bot.discordId,
-                      avatar: await bot.getAvatar(),
-                      created: bot.created,
-                    },
-                    'bots:create'
-                  )
-                )
-              })
-              .catch((e) => next(e))
+            if (userBot.id !== discordId.toString())
+              throw new Error('Invalid discord id')
 
-            client.destroy()
-          } catch (e) {
-            next(e)
-          }
-        })
-
-        client.login(token.toString()).catch((e) => next(e))
+            const bot = await Bot.query().insertGraphAndFetch({
+              created: utcToZonedTime(Date.now(), 'Etc/UTC'),
+              ownerId: user.id,
+              discordId: discordId.toString(),
+              token: token.toString(),
+            })
+            invalidateCacheWithPrefix('bots')
+            res.json(
+              new BaseMessage(
+                {
+                  id: bot.id,
+                  discordId: bot.discordId,
+                  avatar: await bot.getAvatar(),
+                  created: bot.created,
+                },
+                'bots:create'
+              )
+            )
+          })
+          .catch((e) => next(e))
       } catch (e) {
         next(e)
       }

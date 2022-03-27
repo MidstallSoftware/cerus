@@ -1,5 +1,4 @@
 import { APIUser } from 'discord-api-types/v9'
-import { Client } from 'discord.js'
 import { Model, Pojo } from 'objection'
 import BotCommand from './botcommand'
 import BotMessage from './botmessage'
@@ -41,29 +40,13 @@ export default class Bot extends Model {
     return json
   }
 
-  fetch(): Promise<APIUser> {
-    return new Promise((resolve, reject) => {
-      const client = new Client({
-        intents: [],
-      })
-
-      client.on('ready', () => {
-        resolve({
-          id: client.user.id,
-          username: client.user.username,
-          discriminator: client.user.discriminator,
-          avatar: client.user.avatar,
-          bot: client.user.bot,
-          system: client.user.system,
-          mfa_enabled: client.user.mfaEnabled,
-          banner: client.user.banner,
-          accent_color: client.user.accentColor,
-        })
-        client.destroy()
-      })
-
-      client.login(this.token).catch(reject)
+  async fetch(): Promise<APIUser> {
+    const resp = await fetch('https://discord.com/api/users/@me', {
+      headers: {
+        Authorization: `Bot ${this.token}`,
+      },
     })
+    return resp.json()
   }
 
   async getAvatar(): Promise<string> {

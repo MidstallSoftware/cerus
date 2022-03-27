@@ -208,7 +208,15 @@ export default class BotInstance {
 
   async init() {
     await this.client.login(this.entry.token)
-    this.client.user.setActivity('Hosted by Cerus', { type: 'STREAMING' })
-    await this.updateCommands()
+    setImmediate(async () => {
+      try {
+        await this.updateCommands()
+        this.client.user.setActivity('Hosted by Cerus', { type: 'STREAMING' })
+      } catch (e) {
+        winston.error(e)
+        this.stop()
+        DI.bots.delete(this.entry.id)
+      }
+    })
   }
 }
