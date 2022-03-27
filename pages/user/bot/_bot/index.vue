@@ -49,18 +49,35 @@
         </v-card>
       </v-col>
     </v-row>
-    <v-row v-else>
-      <v-col cols="12">
-        <v-card class="mx-auto">
-          <v-card-title>{{ $t('premium-management') }}</v-card-title>
-          <v-card-text>
-            <v-btn @click="cancelPremium">
-              {{ $t('premium-cancel') }}
-            </v-btn>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+    <div v-else>
+      <v-row>
+        <v-col cols="12">
+          <v-card class="mx-auto">
+            <v-card-title>{{ $t('premium-management') }}</v-card-title>
+            <v-card-text>
+              <v-btn @click="cancelPremium">
+                {{ $t('premium-cancel') }}
+              </v-btn>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col cols="12">
+          <v-col cols="12">
+            <v-card class="mx-auto">
+              <v-card-title>{{ $t('analytics') }}</v-card-title>
+              <v-card-text>
+                <v-btn @click="downloadAnalytics">
+                  {{ $t('download') }}
+                </v-btn>
+                <analytics :get-analytics="() => botCalls" />
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-col>
+      </v-row>
+    </div>
   </div>
 </template>
 <i18n>
@@ -73,6 +90,8 @@
     "start": "Start",
     "stop": "Stop",
     "delete": "Delete",
+    "analytics": "Analytics",
+    "download": "Export to Excel",
     "premium-management": "Premium",
     "premium-cancel": "Cancel",
     "premium-signup": "Sign up for Premium",
@@ -85,15 +104,20 @@
 }
 </i18n>
 <script lang="ts">
+import downloadFile from 'js-file-download'
 import { Vue, Component } from 'vue-property-decorator'
 import { BaseMessageInterface } from '~/api/message'
-import { APIBot } from '~/api/types'
+import { APIBot, APIInteractionCall } from '~/api/types'
+import Analytics from '~/components/Analytics.vue'
 
 @Component({
   head() {
     return {
       title: (this as PageUserBotSlug).bot.name,
     }
+  },
+  components: {
+    Analytics,
   },
   middleware: 'auth',
   layout: 'user',
@@ -120,10 +144,23 @@ export default class PageUserBotSlug extends Vue {
   startingStopping: boolean = false
 
   get botCalls() {
+    if (!this.bot.premium) return []
     return [
-      ...this.bot.messages.map((m) => m.calls),
-      ...this.bot.commands.map((c) => c.calls),
+      ...(this.bot.messages || []).map((m) => m.calls).flat(),
+      ...(this.bot.commands || [])
+        .map((c) => c.calls as APIInteractionCall[])
+        .flat(),
     ]
+  }
+
+  downloadAnalytics() {
+    this.error = null
+    this.$axios
+      .$get(`/api/v1/bots?id=${this.$route.params.bot}`, {
+        responseType: 'blob',
+      })
+      .then((res) => downloadFile(res, `cerus-${this.$route.params.bot}.xlsx`))
+      .catch((e) => (this.error = e))
   }
 
   startStop() {

@@ -20,11 +20,60 @@ import BotCommand from '../../database/entities/botcommand'
 import BotMessage from '../../database/entities/botmessage'
 import winston from '../../providers/winston'
 import { DI } from '../../di'
+import { APIInteractionCall } from '../../types'
 import BotInstance from '../../bot'
 import { fetchBot } from '../../lib/bot'
+import { exportCalls } from '../../lib/call'
 
 export default function () {
   return {
+    export: (req: Request, res: Response, next: NextFunction) => {
+      try {
+        if (!res.locals.auth && !res.locals.auth.user)
+          throw new HttpUnauthorizedError('User is not authenticated')
+
+        const user: User = res.locals.auth.user
+
+        const run = async () => {
+          const bot = await fetchBot(
+            Bot.query()
+              .findById(parseInt(req.query.id.toString()))
+              .where('ownerId', user.id)
+          )
+
+          if (!bot.premium) throw new Error('Bot is not premium')
+
+          const workbook = exportCalls(
+            [
+              ...bot.messages.map((m) => m.calls).flat(),
+              ...bot.commands
+                .map((c) => c.calls as APIInteractionCall[])
+                .flat(),
+            ],
+            {
+              headerFooter: {
+                firstFooter: `Cerus Bot #${bot.id} - ${bot.name}`,
+              },
+            }
+          )
+
+          res.setHeader(
+            'Content-Type',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          )
+          res.setHeader(
+            'Content-Disposition',
+            `attachment; filename=cerus-${bot.id}.xlsx`
+          )
+
+          await workbook.xlsx.write(res)
+          res.end()
+        }
+        run().catch((e) => next(e))
+      } catch (e) {
+        next(e)
+      }
+    },
     update: (req: Request, res: Response, next: NextFunction) => {
       try {
         if (!res.locals.auth && !res.locals.auth.user)

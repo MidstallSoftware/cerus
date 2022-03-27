@@ -86,7 +86,7 @@ export default class Analytics extends Vue {
 
   getSeries(view: ViewType): object[] {
     const now = new Date()
-    const data = this.getAnalytics(view).filter((entry) => {
+    const data = (this.getAnalytics(view) || []).filter((entry) => {
       switch (view) {
         case ViewType.WEEK:
           return (

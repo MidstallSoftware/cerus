@@ -113,7 +113,7 @@ import Analytics from '~/components/Analytics.vue'
   },
 })
 export default class PageUserBotMessageSlug extends Vue {
-  message: APIMessage = { code: '' } as unknown as APIMessage
+  message: APIMessage = { code: '', calls: [] } as unknown as APIMessage
   bot: APIBot = { premium: false } as APIBot
   saving: boolean = false
   error: Error = null
@@ -140,7 +140,7 @@ export default class PageUserBotMessageSlug extends Vue {
       .then((res) =>
         downloadFile(
           res,
-          `cerus-${this.$route.params.bot}-${this.$route.params.cmd}.xlsx`
+          `cerus-${this.$route.params.bot}-${this.$route.params.msg}.xlsx`
         )
       )
       .catch((e) => (this.error = e))
