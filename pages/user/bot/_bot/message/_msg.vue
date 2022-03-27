@@ -17,6 +17,21 @@
     </v-row>
     <v-row>
       <v-col cols="12">
+        <v-col cols="12">
+          <v-card class="mx-auto">
+            <v-card-title>{{ $t('analytics') }}</v-card-title>
+            <v-card-text>
+              <v-btn @click="downloadAnalytics">
+                {{ $t('download') }}
+              </v-btn>
+              <analytics :get-analytics="() => message.calls" />
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="12">
         <client-only>
           <prism-editor
             ref="editor"
@@ -37,13 +52,17 @@
     "title": "Info",
     "save": "Save",
     "saving": "Saving...",
-    "delete": "Delete"
+    "delete": "Delete",
+    "analytics": "Analytics",
+    "download": "Export to Excel"
   }
 }
 </i18n>
 <script lang="ts">
 import _ from 'lodash'
-import Prism from 'prismjs'
+import downloadFile from 'js-file-download'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import Prism, { highlight, languages } from 'prismjs'
 import 'prismjs/components/prism-lua'
 import { PrismEditor } from 'vue-prism-editor'
 import { Vue, Component } from 'vue-property-decorator'
@@ -112,6 +131,21 @@ export default class PageUserBotMessageSlug extends Vue {
       })
   }, 20 * 60)
 
+  downloadAnalytics() {
+    this.error = null
+    this.$axios
+      .$get(`/api/v1/messages/export?id=${this.$route.params.msg}`, {
+        responseType: 'blob',
+      })
+      .then((res) =>
+        downloadFile(
+          res,
+          `cerus-${this.$route.params.bot}-${this.$route.params.cmd}.xlsx`
+        )
+      )
+      .catch((e) => (this.error = e))
+  }
+
   deleteThis() {
     this.error = null
     this.$axios
@@ -125,7 +159,7 @@ export default class PageUserBotMessageSlug extends Vue {
   }
 
   highlighter(code: string) {
-    return Prism.highlight(code, Prism.languages.lua, 'lua')
+    return highlight(code, languages.lua, 'lua')
   }
 }
 </script>

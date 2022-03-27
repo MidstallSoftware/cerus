@@ -7,6 +7,7 @@ import { transformCall } from './call'
 export function transformMessage(msg: BotMessage): APIMessage {
   return {
     id: msg.id,
+    botId: msg.botId,
     regex: msg.regex,
     code: msg.code,
     created: fixDate(msg.created),

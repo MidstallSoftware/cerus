@@ -118,7 +118,8 @@
 <script lang="ts">
 import downloadFile from 'js-file-download'
 import _ from 'lodash'
-import Prism from 'prismjs'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import Prism, { highlight, languages } from 'prismjs'
 import 'prismjs/components/prism-lua'
 import { PrismEditor } from 'vue-prism-editor'
 import { Vue, Component } from 'vue-property-decorator'
@@ -222,7 +223,7 @@ export default class PageUserBotCommandSlug extends Vue {
   }
 
   highlighter(code: string) {
-    return Prism.highlight(code, Prism.languages.lua, 'lua')
+    return highlight(code, languages.lua, 'lua')
   }
 
   cancelPremium() {

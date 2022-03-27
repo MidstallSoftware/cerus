@@ -27,6 +27,7 @@ export interface APIInteractionCall {
 }
 
 export interface APIMessage extends APIObject {
+  botId: number
   regex: string
   code: string
   calls: APIInteractionCall[]

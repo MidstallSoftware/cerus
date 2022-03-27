@@ -1,5 +1,4 @@
 import { utcToZonedTime } from 'date-fns-tz'
-import { CellValue, Workbook } from 'exceljs'
 import { NextFunction, Request, Response } from 'express'
 import { PartialModelObject } from 'objection'
 import { HttpUnauthorizedError } from '../../exceptions'
@@ -17,6 +16,7 @@ import {
 import Bot from '../../database/entities/bot'
 import { fetchCommand, transformCommand } from '../../lib/command'
 import { APIInteractionCall } from '../../types'
+import { exportCalls } from '../../lib/call'
 
 export default function () {
   return {
@@ -25,96 +25,26 @@ export default function () {
         if (!res.locals.auth && !res.locals.auth.user)
           throw new HttpUnauthorizedError('User is not authenticated')
 
+        const user: User = res.locals.auth.user
+
         const run = async () => {
           const command = await fetchCommand(
-            BotCommand.query().findById(parseInt(req.query.id.toString()))
+            BotCommand.query()
+              .findById(parseInt(req.query.id.toString()))
+              .whereIn(
+                'botId',
+                Bot.query().select('bots.id').where('ownerId', user.id)
+              )
           )
 
           if (!command.premium)
             throw new Error('Premium access is required to export analytics')
 
-          const workbook = new Workbook()
-          workbook.creator = 'Cerus'
-          workbook.created = new Date()
-
-          const sheet = workbook.addWorksheet('Stats', {
+          const workbook = exportCalls(command.calls as APIInteractionCall[], {
             headerFooter: {
-              firstHeader: `Cerus Command #${command.id} (${command.botId}) - ${command.name}`,
+              firstFooter: `Cerus Command #${command.id} (${command.botId}) - ${command.name}`,
             },
           })
-
-          sheet.columns = [
-            { header: 'ID', key: 'id', width: 10, font: { bold: true } },
-            {
-              header: 'Caller ID',
-              key: 'caller',
-              width: 25,
-              font: { bold: true },
-            },
-            {
-              header: 'Timestamp',
-              key: 'timestamp',
-              width: 20,
-              style: {
-                numFmt: 'yyyy-mm-dd hh:mm:ss',
-              },
-              font: { bold: true },
-            },
-            {
-              header: 'Failed',
-              key: 'failed',
-              width: 5,
-              font: { bold: true },
-            },
-          ]
-
-          for (const call of command.calls as APIInteractionCall[]) {
-            sheet.addRow({
-              id: call.id,
-              caller: call.callerId,
-              timestamp: call.timestamp,
-              failed: call.failed.toString(),
-            })
-          }
-
-          const nextRow = sheet.lastRow.number + 1
-
-          sheet.getCell(`A${nextRow}`).value = 'Total Calls'
-          sheet.getCell(`A${nextRow}`).style = {
-            font: {
-              bold: true,
-            },
-          }
-          sheet.getCell(`B${nextRow}`).value = {
-            formula: `COUNT(A2:A${nextRow - 2})`,
-            result: (command.calls as APIInteractionCall[]).length,
-          } as CellValue
-
-          sheet.getCell(`C${nextRow}`).value = 'Cost Per Call'
-          sheet.getCell(`C${nextRow}`).style = {
-            font: {
-              bold: true,
-            },
-          }
-          sheet.getCell(`D${nextRow}`).value = '0.05'
-          sheet.getCell(`D${nextRow}`).style = {
-            numFmt: '$0.00',
-          }
-
-          sheet.getCell(`E${nextRow}`).value = 'Total Cost'
-          sheet.getCell(`E${nextRow}`).style = {
-            font: {
-              bold: true,
-            },
-          }
-
-          sheet.getCell(`F${nextRow}`).value = {
-            formula: `B${nextRow} * D${nextRow}`,
-            result: (command.calls as APIInteractionCall[]).length * 0.05,
-          } as CellValue
-          sheet.getCell(`F${nextRow}`).style = {
-            numFmt: '$0.00',
-          }
 
           res.setHeader(
             'Content-Type',

@@ -15,9 +15,50 @@ import {
 } from '../../utils'
 import Bot from '../../database/entities/bot'
 import { transformMessage, fetchMessage } from '../../lib/message'
+import { exportCalls } from '../../lib/call'
 
 export default function () {
   return {
+    export: (req: Request, res: Response, next: NextFunction) => {
+      try {
+        if (!res.locals.auth && !res.locals.auth.user)
+          throw new HttpUnauthorizedError('User is not authenticated')
+
+        const user: User = res.locals.auth.user
+
+        const run = async () => {
+          const message = await fetchMessage(
+            BotMessage.query()
+              .findById(parseInt(req.query.id.toString()))
+              .whereIn(
+                'botId',
+                Bot.query().select('bots.id').where('ownerId', user.id)
+              )
+          )
+
+          const workbook = exportCalls(message.calls, {
+            headerFooter: {
+              firstFooter: `Cerus Command #${message.id} (${message.botId}) - ${message.regex}`,
+            },
+          })
+
+          res.setHeader(
+            'Content-Type',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          )
+          res.setHeader(
+            'Content-Disposition',
+            `attachment; filename=cerus-${message.botId}-${message.id}.xlsx`
+          )
+
+          await workbook.xlsx.write(res)
+          res.end()
+        }
+        run().catch((e) => next(e))
+      } catch (e) {
+        next(e)
+      }
+    },
     create: (req: Request, res: Response, next: NextFunction) => {
       try {
         if (!res.locals.auth && !res.locals.auth.user)

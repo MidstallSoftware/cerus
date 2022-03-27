@@ -119,6 +119,13 @@ export default class PageUserBotSlug extends Vue {
   error: Error = null
   startingStopping: boolean = false
 
+  get botCalls() {
+    return [
+      ...this.bot.messages.map((m) => m.calls),
+      ...this.bot.commands.map((c) => c.calls),
+    ]
+  }
+
   startStop() {
     if (!this.startingStopping) {
       this.error = null
