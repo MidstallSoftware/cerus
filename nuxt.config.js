@@ -142,6 +142,7 @@ export default {
         'faPlus',
         'faXmark',
         'faCheck',
+        'faQuestion',
       ],
       brands: ['faGithub'],
     },

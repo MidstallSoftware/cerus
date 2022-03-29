@@ -32,6 +32,30 @@
     </v-row>
     <v-row>
       <v-col cols="12">
+        <v-dialog v-model="helpDialog">
+          <template #activator="{ on, attrs }">
+            <v-btn color="blue" icon v-bind="attrs" v-on="on">
+              <fa :icon="['fas', 'question']" />
+            </v-btn>
+          </template>
+
+          <v-card>
+            <v-card-title class="text-h5 grey">
+              {{ $t('help-title') }}
+            </v-card-title>
+
+            <v-card-text>
+              {{ $t('help-p1') }}
+            </v-card-text>
+
+            <v-card-actions>
+              <v-spacer />
+              <v-btn color="primary" text @click="helpDialog = false">
+                {{ $t('close') }}
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
         <client-only>
           <prism-editor
             ref="editor"
@@ -54,6 +78,9 @@
     "saving": "Saving...",
     "delete": "Delete",
     "analytics": "Analytics",
+    "close": "Close",
+    "help-title": "Coding Message Hooks",
+    "help-p1": "Cerus allows for running code when a message matches a regular expression. Cerus binds the message from Discord.JS into Lua via the \"message\" global variable. For more information, we suggest looking at the documentation for Discord.JS's Message class.",
     "download": "Export to Excel"
   }
 }
@@ -117,6 +144,7 @@ export default class PageUserBotMessageSlug extends Vue {
   bot: APIBot = { premium: false } as APIBot
   saving: boolean = false
   error: Error = null
+  helpDialog = false
   saveCode = _.throttle(() => {
     this.error = null
     this.saving = true
