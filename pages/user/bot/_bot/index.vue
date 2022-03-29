@@ -81,6 +81,14 @@
         </v-col>
       </v-row>
     </div>
+    <v-snackbar v-model="snackbar" top>
+      {{ snackbarMessage }}
+      <template #action="{ attrs }">
+        <v-btn color="blue" text v-bind="attrs" @click="snackbar = false">
+          {{ $t('close') }}
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 <i18n>
@@ -96,6 +104,9 @@
     "invite-bot": "Invite",
     "analytics": "Analytics",
     "download": "Export to Excel",
+    "snackbar-message-start": "The bot has been started",
+    "snackbar-message-stop": "The bot has been shutdown",
+    "close": "Close",
     "premium-management": "Premium",
     "premium-cancel": "Cancel",
     "premium-signup": "Sign up for Premium",
@@ -146,6 +157,8 @@ export default class PageUserBotSlug extends Vue {
   premiumValid: boolean = false
   error: Error = null
   startingStopping: boolean = false
+  snackbar: boolean = false
+  snackbarMessage: string = ''
 
   get botCalls() {
     if (!this.bot.premium) return []
@@ -186,6 +199,10 @@ export default class PageUserBotSlug extends Vue {
           msg.data.created = new Date(msg.data.created)
           this.bot = msg.data
           this.startingStopping = false
+          this.snackbar = true
+          this.snackbarMessage = this.$t(
+            `snackbar-message-${this.bot.running ? 'start' : 'stop'}`
+          ).toString()
         })
         .catch((e) => (this.error = e))
     }
