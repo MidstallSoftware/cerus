@@ -61,6 +61,11 @@ export default function () {
                 type: req.body.type,
                 id: req.body.id as number,
               },
+              discounts: [
+                {
+                  coupon: 'mK5BUkYO',
+                },
+              ],
               line_items: [
                 {
                   price: ourPrice.id,
