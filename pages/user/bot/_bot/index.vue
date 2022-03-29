@@ -247,7 +247,7 @@ export default class PageUserBotSlug extends Vue {
           url: window.location.href,
         })
         .then((res) => {
-          this.$router.push(res.data.data.url)
+          window.location.assign(res.data.data.url)
         })
         .catch((e) => (this.error = e))
     }
