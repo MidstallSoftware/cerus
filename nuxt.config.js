@@ -115,7 +115,7 @@ export default {
 
   publicRuntimeConfig: {
     axios: {
-      browserBaseURL: process.env.BROWSER_BASE_URL || 'http://localhost:8087',
+      browserBaseURL: process.env.BROWSER_BASE_URL || 'https://cerusbots.com',
     },
   },
 
