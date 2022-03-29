@@ -63,7 +63,7 @@ export default function () {
               },
               discounts: [
                 {
-                  coupon: 'mK5BUkYO',
+                  coupon: '2KJp7Wpp',
                 },
               ],
               line_items: [
