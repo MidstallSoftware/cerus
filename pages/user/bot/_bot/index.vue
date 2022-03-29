@@ -25,6 +25,9 @@
             <v-btn color="red" @click="deleteThis">
               {{ $t('delete') }}
             </v-btn>
+            <v-btn color="blue" @click="inviteBot">
+              {{ $t('invite-bot') }}
+            </v-btn>
           </v-card-text>
         </v-card>
       </v-col>
@@ -90,6 +93,7 @@
     "start": "Start",
     "stop": "Stop",
     "delete": "Delete",
+    "invite-bot": "Invite",
     "analytics": "Analytics",
     "download": "Export to Excel",
     "premium-management": "Premium",
@@ -161,6 +165,13 @@ export default class PageUserBotSlug extends Vue {
       })
       .then((res) => downloadFile(res, `cerus-${this.$route.params.bot}.xlsx`))
       .catch((e) => (this.error = e))
+  }
+
+  inviteBot() {
+    window.open(
+      `https://discord.com/api/oauth2/authorize?client_id=${this.bot.discordId}&permissions=0&scope=bot%20applications.commands`,
+      '_blank'
+    )
   }
 
   startStop() {
