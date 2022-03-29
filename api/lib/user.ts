@@ -43,6 +43,17 @@ export async function checkUser(header: string): Promise<User> {
       return await user.$query().patchAndFetch(dbUpdate)
     return user
   } else {
+    if (
+      ((
+        (
+          await createQueryCache(User, User.query().count('id')).read()
+        )[0] as any
+      )['count(`id`)'] as number) === 15
+    )
+      throw new Error(
+        'Cannot sign up at this moment, currently capped at 15 users for QA testing'
+      )
+
     const customers = await DI.stripe.customers.list({
       email: self.email,
     })

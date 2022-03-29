@@ -22,7 +22,7 @@
 {
   "en": {
     "login": "Log In",
-    "nouser.message": "Please click the button below to log in with Discord"
+    "nouser.message": "Please click the button below to log in with Discord. If you are trying to log in and it doesn't work, we may have maxed out of available users as we are in the QA testing phase."
   }
 }
 </i18n>
