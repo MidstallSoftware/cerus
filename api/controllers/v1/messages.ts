@@ -110,27 +110,30 @@ export default function () {
 
         const id = parseInt(req.query.id.toString())
         const user: User = res.locals.auth.user
-        BotMessage.query()
-          .deleteById(id)
-          .whereIn(
-            'botId',
-            Bot.query().select('bots.id').where('ownerId', user.id)
-          )
-          .then(async (count) => {
-            if (count === 0) throw new Error("Couldn't delete bot command")
 
-            await BotCall.query().where('messageId', id).delete()
+        const run = async () => {
+          await BotCall.query().where('messageId', id).delete()
 
-            res.json(
-              new BaseMessage(
-                {
-                  id: parseInt(req.query.id.toString()),
-                },
-                'messages:destroy'
-              )
+          const count = await BotMessage.query()
+            .deleteById(id)
+            .whereIn(
+              'botId',
+              Bot.query().select('bots.id').where('ownerId', user.id)
             )
-          })
-          .catch((e) => next(e))
+
+          if (count === 0) throw new Error("Couldn't delete bot command")
+
+          res.json(
+            new BaseMessage(
+              {
+                id,
+              },
+              'messages:destroy'
+            )
+          )
+        }
+
+        run().catch((e) => next(e))
       } catch (e) {
         next(e)
       }

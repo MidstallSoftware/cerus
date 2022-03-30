@@ -18,7 +18,6 @@ import BotCall from '../../database/entities/botcall'
 import BotDataStore from '../../database/entities/botdatastore'
 import BotCommand from '../../database/entities/botcommand'
 import BotMessage from '../../database/entities/botmessage'
-import winston from '../../providers/winston'
 import { DI } from '../../di'
 import { APIInteractionCall } from '../../types'
 import BotInstance from '../../bot'
@@ -189,66 +188,64 @@ export default function () {
         const id = parseInt(req.query.id.toString())
         const user: User = res.locals.auth.user
 
-        Bot.query()
-          .findOne({
-            ownerId: user.id,
-          })
-          .deleteById(id)
-          .then(async (c) => {
-            if (c === 0) throw new Error("Couldn't destroy bot")
+        const run = async () => {
+          if (DI.bots.has(id)) {
+            DI.bots.get(id).stop()
+            DI.bots.delete(id)
+          }
 
-            if (DI.bots.has(id)) {
-              DI.bots.get(id).stop()
-              DI.bots.delete(id)
-            }
-
-            const cmds = await BotCommand.query().where('botId', id)
-            for (const cmd of cmds) {
-              await BotCall.query().select('commandId', cmd.id).delete()
-              await cmd.$query().delete()
-            }
-
-            const msgs = await BotMessage.query().where('botId', id)
-            for (const msg of msgs) {
-              await BotCall.query().select('messageId', msg.id).delete()
-              await msg.$query().delete()
-            }
-
-            await Promise.all(
-              (
-                await DI.stripe.subscriptions.list({
-                  customer: user.customerId,
-                })
-              ).data
-                .filter(
-                  (sub) =>
-                    (sub.items.data[0].price.metadata.type === 'bot' &&
-                      sub.items.data[0].price.metadata.id === id.toString()) ||
-                    (sub.items.data[0].price.metadata.type === 'command' &&
-                      cmds.findIndex(
-                        (c) =>
-                          c.id.toString() ===
-                          sub.items.data[0].price.metadata.id
-                      ) !== -1)
-                )
-                .map(async (sub) => await DI.stripe.subscriptions.del(sub.id))
-            )
-
-            await BotDataStore.query().where('botId', id).delete()
-
-            invalidateCacheWithPrefix('bots')
-              .then(() => {})
-              .catch((e) => winston.error(e))
-            res.json(
-              new BaseMessage(
-                {
-                  id,
-                },
-                'bots:destroy'
+          await Promise.all(
+            (
+              await DI.stripe.subscriptions.list({
+                customer: user.customerId,
+              })
+            ).data
+              .filter(
+                (sub) =>
+                  (sub.items.data[0].price.metadata.type === 'bot' &&
+                    sub.items.data[0].price.metadata.id === id.toString()) ||
+                  (sub.items.data[0].price.metadata.type === 'command' &&
+                    cmds.findIndex(
+                      (c) =>
+                        c.id.toString() === sub.items.data[0].price.metadata.id
+                    ) !== -1)
               )
+              .map(async (sub) => await DI.stripe.subscriptions.del(sub.id))
+          )
+
+          const cmds = await BotCommand.query().where('botId', id)
+          for (const cmd of cmds) {
+            await BotCall.query().select('commandId', cmd.id).delete()
+            await cmd.$query().delete()
+          }
+
+          const msgs = await BotMessage.query().where('botId', id)
+          for (const msg of msgs) {
+            await BotCall.query().select('messageId', msg.id).delete()
+            await msg.$query().delete()
+          }
+
+          await BotDataStore.query().where('botId', id).delete()
+
+          const c = await Bot.query()
+            .findOne({
+              ownerId: user.id,
+            })
+            .deleteById(id)
+
+          if (c === 0) throw new Error("Couldn't destroy bot")
+
+          res.json(
+            new BaseMessage(
+              {
+                id,
+              },
+              'bots:destroy'
             )
-          })
-          .catch((e) => next(e))
+          )
+        }
+
+        run().catch((e) => next(e))
       } catch (e) {
         next(e)
       }
