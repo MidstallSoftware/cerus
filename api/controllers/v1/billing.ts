@@ -76,7 +76,7 @@ export default function () {
                 },
               ],
               mode: 'subscription',
-              success_url: `${req.protocol}://${
+              success_url: `${
                 process.env.BROWSER_BASE_URL
               }/billing/success?id={CHECKOUT_SESSION_ID}&url=${encodeURIComponent(
                 req.body.url
