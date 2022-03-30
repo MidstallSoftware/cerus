@@ -77,8 +77,8 @@ export default function () {
               ],
               mode: 'subscription',
               success_url: `${req.protocol}://${
-                req.hostname
-              }:8087/billing/success?id={CHECKOUT_SESSION_ID}&url=${encodeURIComponent(
+                process.env.BROWSER_BASE_URL
+              }/billing/success?id={CHECKOUT_SESSION_ID}&url=${encodeURIComponent(
                 req.body.url
               )}`,
               cancel_url: `${req.protocol}://${req.hostname}:8087/billing/failure`,
