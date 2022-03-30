@@ -61,11 +61,6 @@ export default function () {
                 type: req.body.type,
                 id: req.body.id as number,
               },
-              discounts: [
-                {
-                  coupon: '2KJp7Wpp',
-                },
-              ],
               line_items: [
                 {
                   price: ourPrice.id,
@@ -76,6 +71,7 @@ export default function () {
                 },
               ],
               mode: 'subscription',
+              allow_promotion_codes: true,
               success_url: `${
                 process.env.BROWSER_BASE_URL
               }/billing/success?id={CHECKOUT_SESSION_ID}&url=${encodeURIComponent(
