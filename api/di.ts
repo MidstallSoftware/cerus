@@ -47,8 +47,12 @@ export async function init(): Promise<void> {
 
   DI.server_start = new Date()
   DI.bots = new Map()
-  DI.mail = await initMail()
 
+  winston.info('Loading E-Mail')
+  DI.mail = await initMail()
+  winston.info('E-Mail has been loaded')
+
+  winston.info('Restoring all bot states')
   Bot.query()
     .where('running', true)
     .then((bots) => {

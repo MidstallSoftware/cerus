@@ -60,6 +60,7 @@ export default class BotInstance {
                         ),
                     ],
                   })
+                  console.log(DI.mail)
                   DI.mail
                     .send(
                       this.entry.owner.email,
