@@ -56,7 +56,7 @@ export async function initMail(): Promise<Mailer> {
         }
       }
       const msg = {
-        from: 'noreply@cerus.com',
+        from: process.env.EMAIL_ADDRESS || process.env.EMAIL_USERNAME,
         /* eslint-disable no-template-curly-in-string */
         html: html
           .split('${subject}')

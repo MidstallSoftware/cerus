@@ -103,6 +103,7 @@ export default function () {
                       'EMAIL_USERNAME',
                       'EMAIL_PASSWORD',
                       'EMAIL_PORT',
+                      'EMAIL_ADDRESS',
                     ].includes(key)
                 )
               ),
