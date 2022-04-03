@@ -43,6 +43,13 @@ export interface APICommand extends APIObject {
   options: APIApplicationCommandOption[]
 }
 
+export interface APIBotInteraction extends APIObject {
+  botId: number
+  type: string
+  calls: APIInteractionCall[]
+  code: string
+}
+
 export interface APIBot extends APIObject {
   name: string
   discordId: string
@@ -53,7 +60,7 @@ export interface APIBot extends APIObject {
   commands: APICommand[]
 }
 
-export interface APIList<T> {
+export interface APIList<T extends APIObject> {
   list: T
   total: number
   pageSize: number

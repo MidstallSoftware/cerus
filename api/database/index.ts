@@ -20,7 +20,6 @@ export async function init(): Promise<Knex> {
     extension: 'ts',
     loadExtensions: ['.js'],
   })
-  await knex.seed.run()
   winston.info('Migrations have been completed')
   return knex
 }

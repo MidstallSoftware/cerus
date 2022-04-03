@@ -36,14 +36,14 @@ export default class BotInteraction extends Model {
     return json
   }
 
-  static tableName = 'botMessages'
+  static tableName = 'botInteractions'
 
   static relationMappings = {
     bot: {
       relation: Model.BelongsToOneRelation,
       modelClass: Bot,
       join: {
-        from: 'botMessages.botId',
+        from: 'botInteractions.botId',
         to: 'bots.id',
       },
     },
@@ -51,7 +51,7 @@ export default class BotInteraction extends Model {
       relation: Model.HasManyRelation,
       modelClass: BotCall,
       join: {
-        from: 'botMessages.id',
+        from: 'botInteractions.id',
         to: 'botCalls.messageId',
       },
     },
