@@ -26,6 +26,8 @@
             <h1>Failed to run ${type} ${objectName}</h1>
             <h3>Error</h3>
             <code>${error}</code>
+            <h3>Messages</h3>
+            <code>${messages}</code>
           </mj-text>
         </mj-column>
       </mj-group>

@@ -72,6 +72,7 @@ export default class BotInstance {
                         botId: this.entry.id,
                         objectId: hook.id,
                         error: e,
+                        messages,
                       }
                     )
                     .catch((e) => winston.error(e))
@@ -186,6 +187,7 @@ export default class BotInstance {
                       botId: this.entry.id,
                       objectId: cmd.id,
                       error: e,
+                      messages,
                     }
                   )
                   .catch((e) => winston.error(e))
@@ -255,6 +257,7 @@ export default class BotInstance {
                       botId: this.entry.id,
                       objectId: inter.id,
                       error: e,
+                      messages,
                     }
                   )
                   .catch((e) => winston.error(e))
