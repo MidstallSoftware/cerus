@@ -181,7 +181,7 @@ export default class BotInstance {
                     'failure',
                     {
                       type: 'interaction',
-                      objectName: inter.type,
+                      objectName: cmd.name,
                       botName: discordUser.username,
                       botId: this.entry.id,
                       objectId: cmd.id,
