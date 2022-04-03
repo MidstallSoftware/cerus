@@ -10,6 +10,7 @@ import {
   license,
 } from '../../../package.json'
 import { DI } from '../../di'
+import { interactionTypes } from '../../types'
 import { createQueryCache, sendCachedResponse } from '../../utils'
 import Bot from '../../database/entities/bot'
 import User from '../..//database/entities/user'
@@ -96,6 +97,11 @@ export default function () {
                       'REDIS_PASSWORD',
                       'STRIPE_KEY',
                       'STRIPE_WEBHOOK_SECRET',
+                      'MAILHOG_HOST',
+                      'EMAIL_URL',
+                      'EMAIL_PORT',
+                      'EMAIL_USERNAME',
+                      'EMAIL_PORT',
                     ].includes(key)
                 )
               ),
@@ -106,6 +112,9 @@ export default function () {
             author,
             license,
             version,
+            constants: {
+              interactionTypes,
+            },
           },
           'instance:info'
         )

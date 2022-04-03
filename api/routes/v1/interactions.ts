@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { validateAuth } from '../../middleware/auth'
 import genController from '../../controllers/v1/interactions'
 import { validateBody, validateQuery } from '../../middleware/validate'
+import { interactionTypes } from '../../types'
 
 export default function (): Router {
   const router = Router()
@@ -26,7 +27,7 @@ export default function (): Router {
       type: 'object',
       properties: {
         botId: { type: 'string', required: true, pattern: /[0-9]+/ },
-        regex: { type: 'string', required: true, minLength: 1 },
+        type: { type: 'string', required: true, enum: interactionTypes },
       },
     }),
     controller.create

@@ -1,6 +1,8 @@
+import { ClientEvents } from 'discord.js'
 import { NextFunction, Request, Response } from 'express'
 import { PartialModelObject } from 'objection'
 import Bot from '../../database/entities/bot'
+import BotCall from '../../database/entities/botcall'
 import BotInteraction from '../../database/entities/botinteraction'
 import User from '../../database/entities/user'
 import { exportCalls } from '../../lib/call'
@@ -14,7 +16,6 @@ import {
   getInt,
   sendCachedResponse,
 } from '../../utils'
-import BotCall from '~/api/database/entities/botcall'
 
 export default function () {
   return {
@@ -66,7 +67,7 @@ export default function () {
 
         const run = async () => {
           const botId = parseInt(req.query.botId.toString())
-          const type = req.query.type.toString()
+          const type = req.query.type.toString() as keyof ClientEvents
 
           const bot = await createSingleQueryCache(
             Bot,
@@ -80,7 +81,10 @@ export default function () {
             (
               await createQueryCache(
                 BotInteraction,
-                BotInteraction.query().where('botId', botId).where('type', type)
+                BotInteraction.query()
+                  .where('botId', botId)
+                  .where('type', type)
+                  .count()
               ).read()
             )[0] as any
           )['count(`id`)'] as number

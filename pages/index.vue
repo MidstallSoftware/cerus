@@ -20,7 +20,7 @@
           <v-card-title>{{ $t('features') }}</v-card-title>
           <v-card-text>
             <ul>
-              <li v-for="i in 6" :key="i">{{ $t(`feat-${i}`) }}</li>
+              <li v-for="i in 7" :key="i">{{ $t(`feat-${i}`) }}</li>
             </ul>
           </v-card-text>
         </v-card>
@@ -53,7 +53,7 @@
           <v-card-text>
             <p>{{ $t('planned-p1') }}</p>
             <ul>
-              <li v-for="i in 3" :key="i">{{ $t(`planned-${i}`) }}</li>
+              <li v-for="i in 2" :key="i">{{ $t(`planned-${i}`) }}</li>
             </ul>
           </v-card-text>
         </v-card>
@@ -98,12 +98,13 @@
     "feat-4": "Caching",
     "feat-5": "Data storage",
     "feat-6": "Programmable with Lua",
+    "feat-7": "E-Mail error reports",
     "oss": "Powered by Open Source Software",
     "oss-p1": "Cerus is powered by open source software and it in fact open source itself",
     "deps": "Notable Dependencies",
     "dep-1": "NuxtJS",
     "dep-2": "Objection.JS",
-    "dep-3": "Husky",
+    "dep-3": "Discord.JS",
     "dep-4": "date-fns",
     "dep-5": "Discord.JS",
     "deps-more": "More dependencies can be found in the package.json file in the Cerus source code:",
@@ -111,7 +112,6 @@
     "planned-p1": "These are a list of great features which we plan to incorporate",
     "planned-1": "Bot Discovery",
     "planned-2": "GitHub Deployment",
-    "planned-3": "E-Mailed Errors and Reports",
     "stats-refresh": "Refresh",
     "stats": "Statistics & Service Information",
     "stats-bots": "Bots Online: {online} ({offline} offline)",

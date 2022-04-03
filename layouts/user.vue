@@ -81,6 +81,37 @@
                 </a>
               </v-list-item>
             </div>
+
+            <div v-if="bot.premium">
+              <v-subheader>{{ $t('interactions') }}</v-subheader>
+              <v-list-item
+                v-for="interaction in bot.interactions"
+                :key="interaction.id"
+                link
+              >
+                <a
+                  :href="
+                    '/user/bot/' +
+                    $route.params.bot +
+                    '/interaction/' +
+                    interaction.id
+                  "
+                  class="pl-4 text--primary text-decoration-none"
+                >
+                  <v-list-item-title v-text="interaction.type" />
+                </a>
+              </v-list-item>
+              <v-list-item link>
+                <a
+                  :href="'/user/bot/' + $route.params.bot + '/interaction/@new'"
+                  class="pl-4 text--primary text-decoration-none"
+                >
+                  <v-list-item-title
+                    ><i>{{ $t('new-interaction') }}</i></v-list-item-title
+                  >
+                </a>
+              </v-list-item>
+            </div>
           </v-list>
         </div>
       </v-navigation-drawer>
@@ -107,10 +138,12 @@
   "en": {
     "commands": "Commands",
     "messages": "Message Hooks",
+    "interactions": "Interaction Hooks",
     "bot-info": "Information",
     "new-bot": "Create a Bot",
     "new-command": "New Command",
-    "new-message": "New Message Hook"
+    "new-message": "New Message Hook",
+    "new-interaction": "New Interaction Hook"
   }
 }
 </i18n>
@@ -141,7 +174,7 @@ import BotsNavigation from '~/components/BotsNavigation.vue'
   },
 })
 export default class LayoutUser extends Vue {
-  bot: APIBot = { commands: [], messages: [] } as APIBot
+  bot: APIBot = { commands: [], messages: [], interactions: [] } as APIBot
   drawer: boolean = true
 
   get command(): APICommand | undefined {
@@ -188,6 +221,14 @@ export default class LayoutUser extends Vue {
           ({ id }) => id === parseInt(this.$route.params.msg.toString())
         )
         return typeof msg === 'object' ? msg.regex : ''
+      },
+      'user-bot-bot-interaction-@new': () =>
+        this.$t('new-interaction').toString(),
+      'user-bot-bot-interaction-inter': () => {
+        const msg = this.bot.interactions.find(
+          ({ id }) => id === parseInt(this.$route.params.inter.toString())
+        )
+        return typeof msg === 'object' ? msg.type : ''
       },
     }
 

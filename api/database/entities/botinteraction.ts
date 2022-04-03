@@ -1,3 +1,4 @@
+import { ClientEvents } from 'discord.js'
 import { Model, Pojo } from 'objection'
 import Bot from './bot'
 import BotCall from './botcall'
@@ -6,7 +7,7 @@ const TIME_COLUMNS = ['created']
 
 export default class BotInteraction extends Model {
   id!: number
-  type!: string
+  type!: keyof ClientEvents
   code!: string
   botId!: number
   created!: number | string | Date

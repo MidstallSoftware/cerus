@@ -1,4 +1,5 @@
 import { APIApplicationCommandOption } from 'discord-api-types/v9'
+import { ClientEvents, Constants } from 'discord.js'
 
 export interface APIObject {
   id: number
@@ -45,7 +46,7 @@ export interface APICommand extends APIObject {
 
 export interface APIBotInteraction extends APIObject {
   botId: number
-  type: string
+  type: keyof ClientEvents
   calls: APIInteractionCall[]
   code: string
 }
@@ -67,3 +68,15 @@ export interface APIList<T extends APIObject> {
   pageSize: number
   offset: number
 }
+
+export const interactionTypes = Object.values(Constants.Events).filter(
+  (v) =>
+    ![
+      'raw',
+      'error',
+      'warn',
+      'debug',
+      'messageCreate',
+      'interactionCreate',
+    ].includes(v)
+)

@@ -12,6 +12,8 @@ services:
       - ./.env
     networks:
       - servers
+    logging:
+      driver: 'none'
     restart: on-failure
   cache:
     image: 'redis:6.2-alpine'
@@ -23,6 +25,8 @@ services:
       - ./.env
     networks:
       - servers
+    logging:
+      driver: 'none'
     restart: on-failure
   nuxt:
     build: .
@@ -43,6 +47,7 @@ volumes:
   data-cache:
     driver: local
   data-db:
+    driver: local
 
 networks:
   servers:

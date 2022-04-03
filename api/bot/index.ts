@@ -28,57 +28,77 @@ export default class BotInstance {
           let errors = ''
           let results = ''
           let failed = false
-          defineContext(this, hook.code, {
-            premium: true,
-            type: 'message',
-            globals: {
-              message: msg,
-            },
-            print(...args: any[]) {
-              messages += args.map((v) => v.toString()).join('\t') + '\n'
-            },
-          })
-            .then((result) => {
-              results = JSON.stringify(result)
-            })
-            .catch((e) => {
-              failed = true
-              errors += e.toString() + '\n'
-              winston.error(e)
-              msg.reply({
-                embeds: [
-                  new MessageEmbed()
-                    .setTitle(
-                      `${this.client.user.username} - ${hook.regex}: Failed to run`
-                    )
-                    .setColor('RED')
-                    .setDescription(
-                      `Failed to run interaction:\n${codeBlock(e.message)}`
-                    ),
-                ],
+          this.entry
+            .fetch()
+            .then((discordUser) =>
+              defineContext(this, hook.code, {
+                premium: true,
+                type: 'message',
+                globals: {
+                  message: msg,
+                },
+                print(...args: any[]) {
+                  messages += args.map((v) => v.toString()).join('\t') + '\n'
+                },
               })
-            })
-            .finally(() =>
-              setImmediate(async () => {
-                winston.debug('Adding bot call')
-                try {
-                  await BotCall.query().insert({
-                    messageId: hook.id,
-                    type: 'message',
-                    channelId: msg.channelId,
-                    guildId: msg.guildId,
-                    failed,
-                    dateTime: new Date(new Date().toUTCString()),
-                    callerId: msg.member.id,
-                    result: results,
-                    errors,
-                    messages,
-                  })
-                } catch (e) {
+                .then((result) => {
+                  results = JSON.stringify(result)
+                })
+                .catch((e) => {
+                  failed = true
+                  errors += e.toString() + '\n'
                   winston.error(e)
-                }
-              })
+                  msg.reply({
+                    embeds: [
+                      new MessageEmbed()
+                        .setTitle(
+                          `${this.client.user.username} - ${hook.regex}: Failed to run`
+                        )
+                        .setColor('RED')
+                        .setDescription(
+                          `Failed to run interaction:\n${codeBlock(e.message)}`
+                        ),
+                    ],
+                  })
+                  DI.mail
+                    .send(
+                      this.entry.owner.email,
+                      `Message Hook Failure: Cerus - ${discordUser.username} - ${hook.regex}`,
+                      'failure',
+                      {
+                        type: 'message',
+                        objectName: hook.regex,
+                        botName: discordUser.username,
+                        botId: this.entry.id,
+                        objectId: hook.id,
+                        error: e,
+                      }
+                    )
+                    .catch((e) => winston.error(e))
+                })
+                .finally(() =>
+                  setImmediate(async () => {
+                    winston.debug('Adding bot call')
+                    try {
+                      await BotCall.query().insert({
+                        messageId: hook.id,
+                        type: 'message',
+                        channelId: msg.channelId,
+                        guildId: msg.guildId,
+                        failed,
+                        dateTime: new Date(new Date().toUTCString()),
+                        callerId: msg.member.id,
+                        result: results,
+                        errors,
+                        messages,
+                      })
+                    } catch (e) {
+                      winston.error(e)
+                    }
+                  })
+                )
             )
+            .catch((e) => winston.error(e))
         }
       }
     })
@@ -100,77 +120,99 @@ export default class BotInstance {
         let results = ''
         let failed = false
 
-        defineContext(this, cmd.code, {
-          premium: cmd.premium === 1,
-          type: 'command',
-          globals: {
-            interaction: inter,
-          },
-          print(...args: any[]) {
-            messages += args.map((v) => v.toString()).join('\t') + '\n'
-          },
-        })
-          .then(async (result) => {
-            results = JSON.stringify(result)
-            if (cmd.premium === 1) {
-              const subs = await DI.stripe.subscriptions.list({
-                customer: this.entry.owner.customerId,
-              })
-              const sub = subs.data.find(
-                (s) =>
-                  s.items.data[0].price.metadata.type === 'command' &&
-                  s.items.data[0].price.metadata.id === this.entry.id.toString()
-              )
-              await DI.stripe.subscriptionItems.createUsageRecord(
-                sub.items.data[0].id,
-                {
-                  quantity: 1,
-                  timestamp: 'now',
-                  action: 'increment',
-                }
-              )
-            }
-          })
-          .catch((e) => {
-            failed = true
-            errors += e.toString() + '\n'
-            winston.error(e)
-            const r = {
-              embeds: [
-                new MessageEmbed()
-                  .setTitle(
-                    `${this.client.user.username} - ${cmd.name}: Failed to run`
-                  )
-                  .setColor('RED')
-                  .setDescription(
-                    `Failed to run interaction:\n${codeBlock(e.message)}`
-                  ),
-              ],
-            }
-            if (!inter.replied) inter.reply(r)
-            else inter.channel.send(r)
-          })
-          .finally(() =>
-            setImmediate(async () => {
-              winston.debug('Adding bot call')
-              try {
-                await BotCall.query().insert({
-                  commandId: cmd.id,
-                  type: 'command',
-                  dateTime: new Date(new Date().toUTCString()),
-                  channelId: inter.channelId,
-                  guildId: inter.guildId,
-                  callerId: inter.member.user.id,
-                  result: results,
-                  failed,
-                  errors,
-                  messages,
-                })
-              } catch (e) {
-                winston.error(e)
-              }
+        this.entry
+          .fetch()
+          .then((discordUser) =>
+            defineContext(this, cmd.code, {
+              premium: cmd.premium === 1,
+              type: 'command',
+              globals: {
+                interaction: inter,
+              },
+              print(...args: any[]) {
+                messages += args.map((v) => v.toString()).join('\t') + '\n'
+              },
             })
+              .then(async (result) => {
+                results = JSON.stringify(result)
+                if (cmd.premium === 1) {
+                  const subs = await DI.stripe.subscriptions.list({
+                    customer: this.entry.owner.customerId,
+                  })
+                  const sub = subs.data.find(
+                    (s) =>
+                      s.items.data[0].price.metadata.type === 'command' &&
+                      s.items.data[0].price.metadata.id ===
+                        this.entry.id.toString()
+                  )
+                  await DI.stripe.subscriptionItems.createUsageRecord(
+                    sub.items.data[0].id,
+                    {
+                      quantity: 1,
+                      timestamp: 'now',
+                      action: 'increment',
+                    }
+                  )
+                }
+              })
+              .catch((e) => {
+                failed = true
+                errors += e.toString() + '\n'
+                winston.error(e)
+                const r = {
+                  embeds: [
+                    new MessageEmbed()
+                      .setTitle(
+                        `${this.client.user.username} - ${cmd.name}: Failed to run`
+                      )
+                      .setColor('RED')
+                      .setDescription(
+                        `Failed to run interaction:\n${codeBlock(e.message)}`
+                      ),
+                  ],
+                }
+                if (!inter.replied) inter.reply(r)
+                else inter.channel.send(r)
+
+                DI.mail
+                  .send(
+                    this.entry.owner.email,
+                    `Interaction Failure: Cerus - ${discordUser.username} - ${cmd.name}`,
+                    'failure',
+                    {
+                      type: 'interaction',
+                      objectName: inter.type,
+                      botName: discordUser.username,
+                      botId: this.entry.id,
+                      objectId: cmd.id,
+                      error: e,
+                    }
+                  )
+                  .catch((e) => winston.error(e))
+              })
+              .finally(() =>
+                setImmediate(async () => {
+                  winston.debug('Adding bot call')
+                  try {
+                    await BotCall.query().insert({
+                      commandId: cmd.id,
+                      type: 'command',
+                      dateTime: new Date(new Date().toUTCString()),
+                      channelId: inter.channelId,
+                      guildId: inter.guildId,
+                      callerId: inter.member.user.id,
+                      result: results,
+                      failed,
+                      errors,
+                      messages,
+                    })
+                  } catch (e) {
+                    winston.error(e)
+                  }
+                })
+              )
           )
+          .catch((e) => winston.error(e))
       }
     })
 
@@ -181,42 +223,62 @@ export default class BotInstance {
         let results = ''
         let failed = false
 
-        defineContext(this, inter.code, {
-          premium: true,
-          type: 'interaction',
-          globals: {
-            arguments: args,
-          },
-          print(...args: any[]) {
-            messages += args.map((v) => v.toString()).join('\t') + '\n'
-          },
-        })
-          .then((result) => {
-            results = JSON.stringify(result)
-          })
-          .catch((e) => {
-            failed = true
-            errors += e.toString() + '\n'
-            winston.error(e)
-          })
-          .finally(() =>
-            setImmediate(async () => {
-              winston.debug('Adding bot call')
-              try {
-                await BotCall.query().insert({
-                  interactionId: inter.id,
-                  type: 'message',
-                  failed,
-                  dateTime: new Date(new Date().toUTCString()),
-                  result: results,
-                  errors,
-                  messages,
-                })
-              } catch (e) {
-                winston.error(e)
-              }
+        this.entry
+          .fetch()
+          .then((discordUser) =>
+            defineContext(this, inter.code, {
+              premium: true,
+              type: 'interaction',
+              globals: {
+                arguments: args,
+              },
+              print(...args: any[]) {
+                messages += args.map((v) => v.toString()).join('\t') + '\n'
+              },
             })
+              .then((result) => {
+                results = JSON.stringify(result)
+              })
+              .catch((e) => {
+                failed = true
+                errors += e.toString() + '\n'
+                winston.error(e)
+                DI.mail
+                  .send(
+                    this.entry.owner.email,
+                    `Interaction Failure: Cerus - ${discordUser.username} - ${inter.type}`,
+                    'failure',
+                    {
+                      type: 'interaction',
+                      objectName: inter.type,
+                      botName: discordUser.username,
+                      botId: this.entry.id,
+                      objectId: inter.id,
+                      error: e,
+                    }
+                  )
+                  .catch((e) => winston.error(e))
+              })
+              .finally(() =>
+                setImmediate(async () => {
+                  winston.debug('Adding bot call')
+                  try {
+                    await BotCall.query().insert({
+                      interactionId: inter.id,
+                      type: 'message',
+                      failed,
+                      dateTime: new Date(new Date().toUTCString()),
+                      result: results,
+                      errors,
+                      messages,
+                    })
+                  } catch (e) {
+                    winston.error(e)
+                  }
+                })
+              )
           )
+          .catch((e) => winston.error(e))
       })
     }
   }
