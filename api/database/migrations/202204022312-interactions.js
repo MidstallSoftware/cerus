@@ -1,10 +1,23 @@
-const { interactionTypes } = require('../../types')
+const { Constants } = require('discord.js')
 
 exports.up = (knex) =>
   Promise.all([
     knex.schema.createTable('botInteractions', (table) => {
       table.increments('id').primary().unsigned()
-      table.enum('type', interactionTypes)
+      table.enum(
+        'type',
+        Object.values(Constants.Events).filter(
+          (v) =>
+            ![
+              'raw',
+              'error',
+              'warn',
+              'debug',
+              'messageCreate',
+              'interactionCreate',
+            ].includes(v)
+        )
+      )
       table
         .integer('botId')
         .unsigned()

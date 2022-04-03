@@ -25,13 +25,16 @@ export async function initMail(): Promise<Mailer> {
   const transport = createTransport(
     process.env.EMAIL_URL || {
       host: process.env.EMAIL_HOST,
-      port: parseInt(process.env.EMAIL_PORT),
+      port: parseInt(process.env.EMAIL_PORT || '587'),
       auth: hasAuth
         ? {
             user: process.env.EMAIL_USERNAME,
             pass: process.env.EMAIL_PASSWORD,
           }
         : undefined,
+      tls: {
+        rejectUnauthorized: false,
+      },
       debug: !production,
     }
   )
