@@ -173,6 +173,52 @@ export default class BotInstance {
           )
       }
     })
+
+    for (const inter of this.entry.interactions) {
+      this.client.on(inter.type, (...args) => {
+        let messages = ''
+        let errors = ''
+        let results = ''
+        let failed = false
+
+        defineContext(this, inter.code, {
+          premium: true,
+          type: 'interaction',
+          globals: {
+            arguments: args,
+          },
+          print(...args: any[]) {
+            messages += args.map((v) => v.toString()).join('\t') + '\n'
+          },
+        })
+          .then((result) => {
+            results = JSON.stringify(result)
+          })
+          .catch((e) => {
+            failed = true
+            errors += e.toString() + '\n'
+            winston.error(e)
+          })
+          .finally(() =>
+            setImmediate(async () => {
+              winston.debug('Adding bot call')
+              try {
+                await BotCall.query().insert({
+                  interactionId: inter.id,
+                  type: 'message',
+                  failed,
+                  dateTime: new Date(new Date().toUTCString()),
+                  result: results,
+                  errors,
+                  messages,
+                })
+              } catch (e) {
+                winston.error(e)
+              }
+            })
+          )
+      })
+    }
   }
 
   private setCommands(guild: string) {
@@ -206,7 +252,6 @@ export default class BotInstance {
   }
 
   async init() {
-    console.log(this)
     await this.client.login(this.entry.token)
     setImmediate(async () => {
       try {

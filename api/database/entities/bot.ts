@@ -4,6 +4,7 @@ import fetch from 'node-fetch'
 import BotCommand from './botcommand'
 import BotMessage from './botmessage'
 import User from './user'
+import BotInteraction from './botinteraction'
 
 const TIME_COLUMNS = ['created']
 
@@ -17,6 +18,7 @@ export default class Bot extends Model {
   premium!: number
   commands!: BotCommand[]
   messages!: BotMessage[]
+  interactions!: BotInteraction[]
   running!: boolean
 
   $parseDatabaseJson(json: Pojo) {
@@ -72,6 +74,14 @@ export default class Bot extends Model {
       join: {
         from: 'bots.id',
         to: 'botCommands.botId',
+      },
+    },
+    interactions: {
+      relation: Model.HasManyRelation,
+      modelClass: BotInteraction,
+      join: {
+        from: 'bots.id',
+        to: 'botInteractions.botId',
       },
     },
     owner: {

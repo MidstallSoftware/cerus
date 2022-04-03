@@ -2,6 +2,7 @@ import { QueryBuilder } from 'objection'
 import Bot from '../database/entities/bot'
 import BotCommand from '../database/entities/botcommand'
 import BotMessage from '../database/entities/botmessage'
+import BotInteraction from '../database/entities/botinteraction'
 import User from '../database/entities/user'
 import { createQueryCache, createSingleQueryCache, fixDate } from '../utils'
 import { APIBot } from '../types'
@@ -9,6 +10,7 @@ import BotInstance from '../bot'
 import { DI } from '../di'
 import { fetchMessage } from './message'
 import { fetchCommand } from './command'
+import { fetchInteraction } from './interaction'
 
 export async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
   const cache = createSingleQueryCache(Bot, query, 'bots')
@@ -25,9 +27,15 @@ export async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
     BotCommand.query().where('botId', value.id).select('id'),
     'commands'
   )
+  const cacheInteractions = createQueryCache(
+    BotInteraction,
+    BotInteraction.query().where('botId', value.id).select('id'),
+    'interactions'
+  )
 
   const valueMessages = await cacheMessages.read()
   const valueCommands = await cacheCommands.read()
+  const valueInteractions = await cacheInteractions.read()
 
   return {
     id: value.id,
@@ -43,6 +51,9 @@ export async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
     commands: await Promise.all(
       valueCommands.map((v) => fetchCommand(v.$query()))
     ),
+    interactions: await Promise.all(
+      valueInteractions.map((v) => fetchInteraction(v.$query()))
+    ),
   }
 }
 
@@ -57,6 +68,11 @@ export async function startBot(bot: Bot) {
     BotCommand.query().where('botId', bot.id),
     'commands'
   )
+  const cacheInteractions = createQueryCache(
+    BotInteraction,
+    BotInteraction.query().where('botId', bot.id),
+    'interactions'
+  )
 
   const cacheUser = createSingleQueryCache(
     User,
@@ -65,6 +81,7 @@ export async function startBot(bot: Bot) {
 
   const valueMessages = await cacheMessages.read()
   const valueCommands = await cacheCommands.read()
+  const valueInteractions = await cacheInteractions.read()
   const valeuUser = await cacheUser.read()
 
   await bot.$query().patchAndFetch({
@@ -73,6 +90,7 @@ export async function startBot(bot: Bot) {
 
   bot.messages = valueMessages
   bot.commands = valueCommands
+  bot.interactions = valueInteractions
   bot.owner = valeuUser
 
   const inst = new BotInstance(bot)

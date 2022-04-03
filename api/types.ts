@@ -58,6 +58,7 @@ export interface APIBot extends APIObject {
   running: boolean
   messages: APIMessage[]
   commands: APICommand[]
+  interactions: APIBotInteraction[]
 }
 
 export interface APIList<T extends APIObject> {

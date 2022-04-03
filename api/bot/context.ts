@@ -2,7 +2,7 @@ import { LuaFactory, LuaLibraries } from 'wasmoon'
 import modules from './modules'
 import BotInstance from '.'
 
-export type ContextType = 'command' | 'message'
+export type ContextType = 'command' | 'message' | 'interaction'
 
 export interface Config {
   premium: boolean

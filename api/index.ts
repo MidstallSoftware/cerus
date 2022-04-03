@@ -14,6 +14,7 @@ import genBots from './routes/v1/bots'
 import genCommands from './routes/v1/commands'
 import genMessages from './routes/v1/messages'
 import genInstance from './routes/v1/instance'
+import genInteractions from './routes/v1/interactions'
 import genUser from './routes/v1/user'
 import genBillingController from './controllers/v1/billing'
 import { init } from './di'
@@ -42,6 +43,7 @@ app.use('/v1/bots', genBots())
 app.use('/v1/commands', genCommands())
 app.use('/v1/messages', genMessages())
 app.use('/v1/instance', genInstance())
+app.use('/v1/interactions', genInteractions())
 app.use('/v1/user', genUser())
 app.use(notFoundHandler)
 app.use(errorHandler)
