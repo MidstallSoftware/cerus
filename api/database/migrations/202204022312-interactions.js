@@ -37,4 +37,10 @@ exports.up = (knex) =>
     }),
   ])
 
-exports.down = (knex) => Promise.all([knex.schema.dropTable('botInteractions')])
+exports.down = (knex) =>
+  Promise.all([
+    knex.schema.dropTable('botInteractions'),
+    knex.schema.alterTable('botCalls', (table) => {
+      table.dropColumn('interactionId')
+    }),
+  ])

@@ -19,8 +19,7 @@ import BotCommand from '../../database/entities/botcommand'
 import BotMessage from '../../database/entities/botmessage'
 import { DI } from '../../di'
 import { APIInteractionCall } from '../../types'
-import BotInstance from '../../bot'
-import { fetchBot } from '../../lib/bot'
+import { fetchBot, startBot } from '../../lib/bot'
 import { exportCalls } from '../../lib/call'
 
 export default function () {
@@ -96,26 +95,12 @@ export default function () {
             if (DI.bots.has(id) && !running) {
               DI.bots.get(id).stop()
               DI.bots.delete(id)
-            } else if (!DI.bots.has(id) && running) {
-              const cacheMessages = createQueryCache(
-                BotMessage,
-                BotMessage.query().where('botId', bot.id),
-                'messages'
-              )
-              const cacheCommands = createQueryCache(
-                BotCommand,
-                BotCommand.query().where('botId', bot.id),
-                'commands'
-              )
 
-              const valueMessages = await cacheMessages.read()
-              const valueCommands = await cacheCommands.read()
-              bot.messages = valueMessages
-              bot.commands = valueCommands
-              bot.owner = user
-              const inst = new BotInstance(bot)
-              await inst.init()
-              DI.bots.set(id, inst)
+              await bot.$query().patch({
+                running: false,
+              })
+            } else if (!DI.bots.has(id) && running) {
+              startBot(bot)
             }
           }
 

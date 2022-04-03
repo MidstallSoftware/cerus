@@ -4,6 +4,9 @@ import Stripe from 'stripe'
 import waitOn from 'wait-on'
 import { init as dbInit } from './database'
 import BotInstance from './bot'
+import Bot from './database/entities/bot'
+import { startBot } from './lib/bot'
+import winston from './providers/winston'
 
 export const DI = {} as {
   stripe: Stripe
@@ -29,4 +32,16 @@ export async function init(): Promise<void> {
 
   DI.server_start = new Date()
   DI.bots = new Map()
+
+  Bot.query()
+    .where('running', true)
+    .then((bots) => {
+      for (const bot of bots)
+        setImmediate(() =>
+          startBot(bot).catch((err) =>
+            winston.error(`Failed to start bot ${bot.id}`, err)
+          )
+        )
+    })
+    .catch((err) => winston.error('Failed to start bots', err))
 }

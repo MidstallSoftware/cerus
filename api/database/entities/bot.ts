@@ -17,6 +17,7 @@ export default class Bot extends Model {
   premium!: number
   commands!: BotCommand[]
   messages!: BotMessage[]
+  running!: boolean
 
   $parseDatabaseJson(json: Pojo) {
     json = super.$parseDatabaseJson(json)
