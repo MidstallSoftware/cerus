@@ -2,6 +2,7 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 import mjml from 'mjml'
 import { createTransport } from 'nodemailer'
+import Mail from 'nodemailer/lib/mailer'
 
 const env = process.env.NODE_ENV || 'development'
 const production = env === 'production'
@@ -15,6 +16,8 @@ export interface Mailer {
     templateId: string,
     vars?: Record<string, any>
   ): Promise<void>
+  sendRaw(opts: Mail.Options): Promise<void>
+  sendTemplated(opts: Mail.Options): Promise<void>
 }
 
 export async function initMail(): Promise<Mailer> {
@@ -58,6 +61,16 @@ export async function initMail(): Promise<Mailer> {
         subject,
       }
       await transport.sendMail(msg)
+    },
+    sendRaw: async (opts) => {
+      await transport.sendMail(opts)
+    },
+    sendTemplated: async (opts) => {
+      if (typeof opts.html !== 'string')
+        throw new Error('opts.html must be a string')
+
+      opts.html = mjml(opts.html, { validationLevel: 'strict' }).html
+      await transport.sendMail(opts)
     },
   }
 }

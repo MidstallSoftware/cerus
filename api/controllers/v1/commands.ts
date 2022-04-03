@@ -163,10 +163,7 @@ export default function () {
             .patchAndFetchById(id, obj)
             .whereIn(
               'botId',
-              Bot.query()
-                .select('bots.id')
-                .where('ownerId', user.id)
-                .where('bots.id', id)
+              Bot.query().select('bots.id').where('ownerId', user.id)
             )
         )
           .then((data) => {
