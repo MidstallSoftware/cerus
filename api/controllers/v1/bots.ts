@@ -96,7 +96,7 @@ export default function () {
               DI.bots.get(id).stop()
               DI.bots.delete(id)
 
-              await bot.$query().patch({
+              await bot.$query().patchAndFetch({
                 running: false,
               })
             } else if (!DI.bots.has(id) && running) {

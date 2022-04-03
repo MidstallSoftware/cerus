@@ -58,16 +58,22 @@ export async function startBot(bot: Bot) {
     'commands'
   )
 
+  const cacheUser = createSingleQueryCache(
+    User,
+    User.query().findOne({ id: bot.ownerId })
+  )
+
   const valueMessages = await cacheMessages.read()
   const valueCommands = await cacheCommands.read()
-  bot.messages = valueMessages
-  bot.commands = valueCommands
+  const valeuUser = await cacheUser.read()
 
-  bot.owner = await User.query().findOne({ id: bot.ownerId })
-
-  await bot.$query().patch({
+  await bot.$query().patchAndFetch({
     running: true,
   })
+
+  bot.messages = valueMessages
+  bot.commands = valueCommands
+  bot.owner = valeuUser
 
   const inst = new BotInstance(bot)
   await inst.init()

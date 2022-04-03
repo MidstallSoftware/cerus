@@ -206,6 +206,7 @@ export default class BotInstance {
   }
 
   async init() {
+    console.log(this)
     await this.client.login(this.entry.token)
     setImmediate(async () => {
       try {

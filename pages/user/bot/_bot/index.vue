@@ -198,12 +198,12 @@ export default class PageUserBotSlug extends Vue {
         .then((msg: BaseMessageInterface) => {
           msg.data.created = new Date(msg.data.created)
           this.bot = msg.data
-          this.startingStopping = false
           this.snackbar = true
           this.snackbarMessage = this.$t(
             `snackbar-message-${this.bot.running ? 'start' : 'stop'}`
           ).toString()
         })
+        .finally(() => (this.startingStopping = false))
         .catch((e) => (this.error = e))
     }
   }
