@@ -101,6 +101,7 @@ export default function () {
                       'EMAIL_URL',
                       'EMAIL_PORT',
                       'EMAIL_USERNAME',
+                      'EMAIL_PASSWORD',
                       'EMAIL_PORT',
                     ].includes(key)
                 )
