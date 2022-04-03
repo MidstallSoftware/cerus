@@ -11,7 +11,7 @@ exports.up = (knex) =>
         .defaultTo('default')
       table.dateTime('created').notNullable()
     }),
-    knex.schema.createTable('accessToken', (table) => {
+    knex.schema.createTable('accessTokens', (table) => {
       table.increments('id').primary().unsigned()
       table.string('token').notNullable().unique()
       table
@@ -107,6 +107,6 @@ exports.down = (knex) =>
     knex.schema.dropTable('botCommands'),
     knex.schema.dropTable('botMessages'),
     knex.schema.dropTable('bots'),
-    knex.schema.dropTable('accessToken'),
+    knex.schema.dropTable('accessTokens'),
     knex.schema.dropTable('users'),
   ])
