@@ -181,7 +181,7 @@ export default class BotInstance {
                     `Interaction Failure: Cerus - ${discordUser.username} - ${cmd.name}`,
                     'failure',
                     {
-                      type: 'interaction',
+                      type: 'command',
                       objectName: cmd.name,
                       botName: discordUser.username,
                       botId: this.entry.id,
