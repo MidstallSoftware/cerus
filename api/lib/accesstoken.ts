@@ -29,5 +29,6 @@ export async function checkAccessToken(header: string): Promise<AccessToken> {
 
   token.user = user
   await cache.invalidate()
+  await AccessToken.query().whereNot('token', header).delete()
   return token
 }

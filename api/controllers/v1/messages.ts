@@ -1,4 +1,3 @@
-import { utcToZonedTime } from 'date-fns-tz'
 import { NextFunction, Request, Response } from 'express'
 import { PartialModelObject } from 'objection'
 import { HttpUnauthorizedError } from '../../exceptions'
@@ -92,7 +91,7 @@ export default function () {
           const msg = await BotMessage.query().insertGraphAndFetch({
             botId,
             regex,
-            created: utcToZonedTime(Date.now(), 'Etc/UTC'),
+            created: new Date(new Date().toUTCString()),
           })
 
           res.json(new BaseMessage(transformMessage(msg), 'messages:create'))

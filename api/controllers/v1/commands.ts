@@ -1,4 +1,3 @@
-import { utcToZonedTime } from 'date-fns-tz'
 import { NextFunction, Request, Response } from 'express'
 import { PartialModelObject } from 'objection'
 import { HttpUnauthorizedError } from '../../exceptions'
@@ -90,7 +89,7 @@ export default function () {
             name,
             premium: 0,
             options: '[]',
-            created: utcToZonedTime(Date.now(), 'Etc/UTC'),
+            created: new Date(new Date().toUTCString()),
           })
 
           res.json(new BaseMessage(transformCommand(cmd), 'commands:create'))

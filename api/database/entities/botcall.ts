@@ -6,6 +6,7 @@ export default class BotCall extends Model {
   id!: number
   commandId!: number
   messageId!: number
+  interactionId!: number
   dateTime!: number | string | Date
   type!: 'message' | 'command'
   result!: string

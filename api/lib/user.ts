@@ -1,4 +1,3 @@
-import { utcToZonedTime } from 'date-fns-tz'
 import { PartialModelObject } from 'objection'
 import Stripe from 'stripe'
 import fetch from 'node-fetch'
@@ -71,7 +70,7 @@ export async function checkUser(header: string): Promise<User> {
         email: self.email,
         type: 'default',
         customerId: customer.id,
-        created: utcToZonedTime(Date.now(), 'Etc/UTC'),
+        created: new Date(new Date().toUTCString()),
       })
     } catch {
       return (await userCache.read())[0]

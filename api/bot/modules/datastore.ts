@@ -1,4 +1,3 @@
-import { utcToZonedTime } from 'date-fns-tz'
 import { createSingleQueryCache, createQueryCache, fixDate } from '../../utils'
 import BotDataStore from '../../database/entities/botdatastore'
 import { definedModule, Module } from '../module'
@@ -37,12 +36,12 @@ export default definedModule(
             botId: mod.instance.entry.id,
             key,
             value: JSON.stringify(value),
-            created: utcToZonedTime(Date.now(), 'Etc/UTC'),
-            updated: utcToZonedTime(Date.now(), 'Etc/UTC'),
+            created: new Date(new Date().toUTCString()),
+            updated: new Date(new Date().toUTCString()),
           })
         } else {
           await multiStore[0].$query().patch({
-            updated: utcToZonedTime(Date.now(), 'Etc/UTC'),
+            updated: new Date(new Date().toUTCString()),
             value: JSON.stringify(value),
           })
         }

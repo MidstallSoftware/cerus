@@ -9,6 +9,7 @@ WORKDIR /usr/src/server
 
 COPY . /usr/src/server/
 RUN npm install
+RUN cd submodules/discord.js && npm install
 RUN npm run build
 
 ENV NUXT_HOST=0.0.0.0

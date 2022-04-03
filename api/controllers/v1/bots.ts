@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express'
-import { utcToZonedTime } from 'date-fns-tz'
 import fetch from 'node-fetch'
 import { APIUser } from 'discord-api-types/v9'
 import { PartialModelObject } from 'objection'
@@ -157,7 +156,7 @@ export default function () {
               throw new Error('Invalid discord id')
 
             const bot = await Bot.query().insertGraphAndFetch({
-              created: utcToZonedTime(Date.now(), 'Etc/UTC'),
+              created: new Date(new Date().toUTCString()),
               ownerId: user.id,
               discordId: discordId.toString(),
               token: token.toString(),
