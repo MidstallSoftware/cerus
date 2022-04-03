@@ -100,7 +100,7 @@ export default function () {
                 running: false,
               })
             } else if (!DI.bots.has(id) && running) {
-              startBot(bot)
+              await startBot(bot)
             }
           }
 
