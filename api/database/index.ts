@@ -9,9 +9,8 @@ import config from './knexfile'
 export async function init(): Promise<Knex> {
   await waitOn({ resources: ['tcp:' + process.env.MYSQL_HOST + ':3306'] })
 
-  const cfg = config()
-  winston.debug(`Using knex configuration ${JSON.stringify(cfg)}`)
-  const knex = createKnex(cfg)
+  winston.debug(`Using knex configuration ${JSON.stringify(config)}`)
+  const knex = createKnex(config)
   Model.knex(knex)
 
   winston.info('Beginning migrations')

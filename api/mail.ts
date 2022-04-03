@@ -35,7 +35,10 @@ export async function initMail(): Promise<Mailer> {
       debug: !production,
     }
   )
-  await transport.verify()
+
+  if (!(await transport.verify())) {
+    throw new Error('Failed to connect to email server')
+  }
 
   return {
     send: async (to, subject, templateId, vars) => {

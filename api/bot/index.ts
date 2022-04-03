@@ -60,7 +60,6 @@ export default class BotInstance {
                         ),
                     ],
                   })
-                  console.log(DI.mail)
                   DI.mail
                     .send(
                       this.entry.owner.email,
@@ -175,7 +174,6 @@ export default class BotInstance {
                 if (!inter.replied) inter.reply(r)
                 else inter.channel.send(r)
 
-                console.log(DI.mail)
                 DI.mail
                   .send(
                     this.entry.owner.email,
@@ -245,7 +243,6 @@ export default class BotInstance {
                 failed = true
                 errors += e.toString() + '\n'
                 winston.error(e)
-                console.log(DI.mail)
                 DI.mail
                   .send(
                     this.entry.owner.email,

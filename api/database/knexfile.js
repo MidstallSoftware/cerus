@@ -36,7 +36,7 @@ const config = {
   },
 }
 
-module.exports = () => {
+module.exports = (() => {
   if (!production && process.env.USE_MYSQL) return { ...config.production }
   return config[env]
-}
+})()
