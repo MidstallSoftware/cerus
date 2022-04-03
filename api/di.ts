@@ -9,6 +9,9 @@ import { startBot } from './lib/bot'
 import winston from './providers/winston'
 import { initMail, Mailer } from './mail'
 
+const env = process.env.NODE_ENV || 'development'
+const production = env === 'production'
+
 export const DI = {} as {
   stripe: Stripe
   knex: Knex
@@ -22,8 +25,13 @@ export async function init(): Promise<void> {
   await waitOn({
     resources: [
       'tcp:' + process.env.REDIS_HOST + ':6379',
-      'tcp:' + process.env.EMAIL_HOST + ':' + (process.env.EMAIL_PORT || 25),
-    ],
+      production
+        ? undefined
+        : 'tcp:' +
+          process.env.EMAIL_HOST +
+          ':' +
+          (process.env.EMAIL_PORT || 25),
+    ].filter((v) => v !== undefined),
   })
 
   DI.redis = createClient({
