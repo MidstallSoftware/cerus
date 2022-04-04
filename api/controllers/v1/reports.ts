@@ -1,3 +1,7 @@
+import { join } from 'path'
+import { createHash } from 'crypto'
+import { writeFileSync } from 'fs'
+import { sync as mkdirpSync } from 'mkdirp'
 import { NextFunction, Response, Request } from 'express'
 import { format } from 'date-fns'
 import { transformReport } from '../../lib/report'
@@ -41,7 +45,38 @@ export default function () {
             type: type as APIReportType,
             title: title.toString(),
             content: content.toString(),
+            createdAt: new Date(new Date().toUTCString()),
           })
+
+          mkdirpSync(report.attachmentsPath)
+
+          try {
+            const value = req.files.files
+            if (Array.isArray(value)) {
+              for (const v of value) {
+                const s = v.name.lastIndexOf('.')
+                const ext = v.name.substring(s + 1)
+                const hash = createHash('sha256')
+                  .update(v.data)
+                  .digest('hex')
+                  .substring(0, 15)
+                const fname = `${hash}.${ext}`
+                writeFileSync(join(report.attachmentsPath, fname), v.data)
+              }
+            } else {
+              const s = value.name.lastIndexOf('.')
+              const ext = value.name.substring(s + 1)
+              const hash = createHash('sha256')
+                .update(value.data)
+                .digest('hex')
+                .substring(0, 15)
+              const fname = `${hash}.${ext}`
+              writeFileSync(join(report.attachmentsPath, fname), value.data)
+            }
+          } catch (e) {
+            report.$query().delete()
+            throw e
+          }
 
           setImmediate(async () => {
             const admins = await User.query().where('type', 'admin')

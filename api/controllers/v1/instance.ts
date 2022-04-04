@@ -10,7 +10,7 @@ import {
   license,
 } from '../../../package.json'
 import { DI } from '../../di'
-import { interactionTypes } from '../../types'
+import { interactionTypes, reportTypes } from '../../types'
 import { createQueryCache, sendCachedResponse } from '../../utils'
 import Bot from '../../database/entities/bot'
 import User from '../..//database/entities/user'
@@ -116,6 +116,7 @@ export default function () {
             version,
             constants: {
               interactionTypes,
+              reportTypes,
             },
           },
           'instance:info'

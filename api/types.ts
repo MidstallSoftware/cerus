@@ -1,11 +1,13 @@
 import { APIApplicationCommandOption } from 'discord-api-types/v9'
 import { ClientEvents, Constants } from 'discord.js'
 
-export type APIReportType =
-  | 'discord-tos'
-  | 'scam'
-  | 'illegal-content'
-  | 'phishing'
+export const reportTypes = [
+  'discord-tos',
+  'scam',
+  'illegal-content',
+  'phishing',
+] as const
+export type APIReportType = typeof reportTypes[any]
 
 export interface APIObject {
   id: number

@@ -41,6 +41,7 @@ services:
       NODE_ENV: 'development'
       EMAIL_HOST: 'mailhog'
       EMAIL_PORT: 1025
+      CERUS_STORAGE_DIR: '/usr/src/storage'
     env_file:
       - ./.env
     volumes:
@@ -54,6 +55,7 @@ services:
       - './plugins:/usr/src/server/plugins'
       - './static:/usr/src/server/static'
       - './store:/usr/src/server/store'
+      - 'data-cerus:/usr/src/storage'
       - type: bind
         source: './database-debug.sqlite'
         target: '/usr/src/server/database-debug.sqlite'
@@ -79,6 +81,8 @@ volumes:
   data-cache:
     driver: local
   data-db:
+    driver: local
+  data-cerus:
     driver: local
 
 networks:

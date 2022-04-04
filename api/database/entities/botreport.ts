@@ -22,15 +22,19 @@ export default class BotReport extends Model {
   deletedAt!: number | string | Date
   resolved!: boolean
 
-  get attachments(): Record<string, Blob> {
-    const p = join(
+  get attachmentsPath(): string {
+    return join(
       process.env.CERUS_STORAGE_DIR || '/var/lib/cerus-bots',
       'reportAttachments',
       this.id.toString()
     )
+  }
+
+  get attachments(): Record<string, Blob> {
+    const p = this.attachmentsPath
     if (existsSync(p)) {
       const att: Record<string, Blob> = {}
-      for (const fname in readdirSync(p)) {
+      for (const fname of readdirSync(p)) {
         att[fname] = blobFromSync(join(p, fname))
       }
       return att

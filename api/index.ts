@@ -7,6 +7,7 @@ import express, {
   Response,
   NextFunction,
 } from 'express'
+import fileUpload from 'express-fileupload'
 import winston from './providers/winston'
 import { notFoundHandler, errorHandler } from './middleware/error'
 import genBilling from './routes/v1/billing'
@@ -15,6 +16,7 @@ import genCommands from './routes/v1/commands'
 import genMessages from './routes/v1/messages'
 import genInstance from './routes/v1/instance'
 import genInteractions from './routes/v1/interactions'
+import genReports from './routes/v1/reports'
 import genUser from './routes/v1/user'
 import genBillingController from './controllers/v1/billing'
 import { init } from './di'
@@ -22,6 +24,12 @@ import { init } from './di'
 const app = express()
 
 app.use(cors())
+app.use(
+  fileUpload({
+    preserveExtension: true,
+    debug: (process.env.NODE_ENV || 'development') !== 'development',
+  })
+)
 
 app.use((req: Request, _res: Response, next: NextFunction) => {
   winston.debug(
@@ -44,6 +52,7 @@ app.use('/v1/commands', genCommands())
 app.use('/v1/messages', genMessages())
 app.use('/v1/instance', genInstance())
 app.use('/v1/interactions', genInteractions())
+app.use('/v1/reports', genReports())
 app.use('/v1/user', genUser())
 app.use(notFoundHandler)
 app.use(errorHandler)
