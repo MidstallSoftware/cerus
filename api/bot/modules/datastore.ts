@@ -5,16 +5,21 @@ import { definedModule, Module } from '../module'
 const createStore = (mod: Module, key: string) =>
   createSingleQueryCache(
     BotDataStore,
-    BotDataStore.query().findOne({
-      botId: mod.instance.entry.id,
-      key,
-    })
+    BotDataStore.query()
+      .findOne({
+        botId: mod.instance.entry.id,
+        key,
+      })
+      .whereNull('deletedAt')
   )
 
 const createMultiStore = (mod: Module, key: string) =>
   createQueryCache(
     BotDataStore,
-    BotDataStore.query().where('botId', mod.instance.entry.id).where('key', key)
+    BotDataStore.query()
+      .where('botId', mod.instance.entry.id)
+      .where('key', key)
+      .whereNull('deletedAt')
   )
 
 export default definedModule(
@@ -36,12 +41,12 @@ export default definedModule(
             botId: mod.instance.entry.id,
             key,
             value: JSON.stringify(value),
-            created: new Date(new Date().toUTCString()),
-            updated: new Date(new Date().toUTCString()),
+            createdAt: new Date(new Date().toUTCString()),
+            updatedAt: new Date(new Date().toUTCString()),
           })
         } else {
           await multiStore[0].$query().patch({
-            updated: new Date(new Date().toUTCString()),
+            updatedAt: new Date(new Date().toUTCString()),
             value: JSON.stringify(value),
           })
         }
@@ -53,8 +58,8 @@ export default definedModule(
         return multiStore.length === 0
           ? undefined
           : {
-              created: fixDate(multiStore[0].created),
-              updated: fixDate(multiStore[0].updated),
+              created: fixDate(multiStore[0].createdAt),
+              updated: fixDate(multiStore[0].updatedAt),
               value: JSON.parse(multiStore[0].value || 'null'),
             }
       },
@@ -74,7 +79,9 @@ export default definedModule(
           (await BotDataStore.query()
             .where('botId', mod.instance.entry.id)
             .where('key', key)
-            .delete()) > 0
+            .patch({
+              deletedAt: new Date(),
+            })) > 0
         )
       },
       async exists(key: string): Promise<boolean> {

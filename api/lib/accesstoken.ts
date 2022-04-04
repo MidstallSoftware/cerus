@@ -1,11 +1,15 @@
 import AccessToken from '../database/entities/accesstoken'
+import winston from '../providers/winston'
 import { createQueryCache } from '../utils'
 import { checkUser } from './user'
 
 export async function checkAccessToken(header: string): Promise<AccessToken> {
   const cache = createQueryCache(
     AccessToken,
-    AccessToken.query().where('token', header).orderBy('id')
+    AccessToken.query()
+      .where('token', header)
+      .whereNull('deletedAt')
+      .orderBy('id')
   )
 
   let token = (await cache.read())[0]
@@ -21,7 +25,8 @@ export async function checkAccessToken(header: string): Promise<AccessToken> {
       token: header,
       userId: user.id,
     })
-  } catch {
+  } catch (e) {
+    winston.error('Failed to insert', e)
     const t = await cache.read()
     if (typeof t !== 'undefined') t[0].user = user
     return t[0]

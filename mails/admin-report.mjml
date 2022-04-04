@@ -1,0 +1,34 @@
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-group>
+        <mj-column>
+          <mj-text>
+            <h1>Notice of infraction on Cerus</h1>
+            <p>
+              This E-Mail is to inform you, an administraitor or moderator on
+              Cerus Bots, of a bot which may be conducting illegal operations.
+            </p>
+          </mj-text>
+        </mj-column>
+      </mj-group>
+    </mj-section>
+    <mj-section>
+      <mj-group>
+        <mj-column>
+          <mj-text>
+            <h1>Details</h1>
+            <ul>
+              <li>Report Type: ${type}</li>
+              <li>Reported Time: ${time}</li>
+              <li>Bot Name: ${botName}</li>
+              <li>Bot Owner ID: ${botOwnerId}</li>
+            </ul>
+            <h2>${title}</h2>
+            <p>${content}</p>
+          </mj-text>
+        </mj-column>
+      </mj-group>
+    </mj-section>
+  </mj-body>
+</mjml>

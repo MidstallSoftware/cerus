@@ -1,6 +1,12 @@
 import { APIApplicationCommandOption } from 'discord-api-types/v9'
 import { ClientEvents, Constants } from 'discord.js'
 
+export type APIReportType =
+  | 'discord-tos'
+  | 'scam'
+  | 'illegal-content'
+  | 'phishing'
+
 export interface APIObject {
   id: number
   created: Date
@@ -60,6 +66,15 @@ export interface APIBot extends APIObject {
   messages: APIMessage[]
   commands: APICommand[]
   interactions: APIBotInteraction[]
+}
+
+export interface APIReport extends APIObject {
+  type: APIReportType
+  botId: number
+  title: string
+  content: string
+  attachments: Record<string, Blob>
+  resolved: boolean
 }
 
 export interface APIList<T extends APIObject> {

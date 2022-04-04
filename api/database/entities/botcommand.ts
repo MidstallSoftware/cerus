@@ -2,7 +2,7 @@ import { Model, Pojo } from 'objection'
 import Bot from './bot'
 import BotCall from './botcall'
 
-const TIME_COLUMNS = ['created']
+const TIME_COLUMNS = ['createdAt', 'updatedAt', 'deletedAt']
 
 export default class BotCommand extends Model {
   id!: number
@@ -11,7 +11,9 @@ export default class BotCommand extends Model {
   botId!: number
   premium!: number
   bot!: Bot
-  created!: number | string | Date
+  createdAt!: number | string | Date
+  updatedAt!: number | string | Date
+  deletedAt!: number | string | Date
   calls!: BotCall[]
   options: string
   description!: string

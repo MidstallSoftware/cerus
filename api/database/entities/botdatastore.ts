@@ -1,7 +1,7 @@
 import { Model, Pojo } from 'objection'
 import Bot from './bot'
 
-const TIME_COLUMNS = ['created', 'updated']
+const TIME_COLUMNS = ['createdAt', 'updatedAt', 'deletedAt']
 
 export default class BotDataStore extends Model {
   id!: number
@@ -9,8 +9,9 @@ export default class BotDataStore extends Model {
   bot!: Bot
   key!: string
   value!: string
-  created!: number | string | Date
-  updated!: number | string | Date
+  createdAt!: number | string | Date
+  updatedAt!: number | string | Date
+  deletedAt!: number | string | Date
 
   $parseDatabaseJson(json: Pojo) {
     json = super.$parseDatabaseJson(json)

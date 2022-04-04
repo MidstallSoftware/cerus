@@ -21,7 +21,7 @@ export default function () {
           email: user.email,
           discordid: user.discordId,
           type: user.type,
-          created: fixDate(user.created),
+          created: fixDate(user.createdAt),
         },
         'user:info'
       )
@@ -44,18 +44,36 @@ export default function () {
 
             const cmds = await BotCommand.query().where('botId', bot.id)
             for (const cmd of cmds) {
-              await BotCall.query().select('commandId', cmd.id).delete()
-              await cmd.$query().delete()
+              await BotCall.query()
+                .select('commandId', cmd.id)
+                .patchAndFetch({
+                  deletedAt: new Date(new Date().toUTCString()),
+                })
+              await cmd.$query().patchAndFetch({
+                deletedAt: new Date(new Date().toUTCString()),
+              })
             }
 
             const msgs = await BotMessage.query().where('botId', bot.id)
             for (const msg of msgs) {
-              await BotCall.query().select('messageId', msg.id).delete()
-              await msg.$query().delete()
+              await BotCall.query()
+                .select('messageId', msg.id)
+                .patchAndFetch({
+                  deletedAt: new Date(new Date().toUTCString()),
+                })
+              await msg.$query().patchAndFetch({
+                deletedAt: new Date(new Date().toUTCString()),
+              })
             }
 
-            await BotDataStore.query().where('botId', bot.id).delete()
-            await bot.$query().delete()
+            await BotDataStore.query()
+              .where('botId', bot.id)
+              .patchAndFetch({
+                deletedAt: new Date(new Date().toUTCString()),
+              })
+            await bot.$query().patchAndFetch({
+              deletedAt: new Date(new Date().toUTCString()),
+            })
           }
 
           await Promise.all(
@@ -66,10 +84,16 @@ export default function () {
             ).data.map(async (sub) => await DI.stripe.subscriptions.del(sub.id))
           )
 
-          await DI.stripe.customers.del(user.customerId)
-
-          await AccessToken.query().where('userId', user.id).delete()
-          await User.query().where('id', user.id).delete()
+          await AccessToken.query()
+            .where('userId', user.id)
+            .patchAndFetch({
+              deletedAt: new Date(new Date().toUTCString()),
+            })
+          await User.query()
+            .where('id', user.id)
+            .patchAndFetch({
+              deletedAt: new Date(new Date().toUTCString()),
+            })
 
           res.json(new BaseMessage({ id: user.id }, 'user:delete'))
         }

@@ -34,6 +34,7 @@ export default function () {
         const run = async () => {
           const bot = await fetchBot(
             Bot.query()
+              .whereNull('deletedAt')
               .findById(parseInt(req.query.id.toString()))
               .where('ownerId', user.id)
           )
@@ -80,14 +81,19 @@ export default function () {
         const user: User = res.locals.auth.user
 
         const run = async () => {
-          let bot = await Bot.query().findOne({ ownerId: user.id }).findById(id)
+          let bot = await Bot.query()
+            .whereNull('deletedAt')
+            .findOne({ ownerId: user.id })
+            .findById(id)
 
-          const update: PartialModelObject<Bot> = {}
+          const update: PartialModelObject<Bot> = {
+            updatedAt: new Date(new Date().toUTCString()),
+          }
           if (typeof req.body.token === 'string') update.token = req.body.token
           if (typeof req.body.discordId === 'string')
             update.discordId = req.body.discordId
 
-          if (Object.keys(update).length > 0)
+          if (Object.keys(update).length > 1)
             bot = await bot.$query().patchAndFetch(update)
 
           if (typeof req.body.running === 'boolean') {
@@ -141,7 +147,7 @@ export default function () {
               throw new Error('Invalid discord id')
 
             const bot = await Bot.query().insertGraphAndFetch({
-              created: new Date(new Date().toUTCString()),
+              createdAt: new Date(new Date().toUTCString()),
               ownerId: user.id,
               discordId: discordId.toString(),
               token: token.toString(),
@@ -153,7 +159,7 @@ export default function () {
                   id: bot.id,
                   discordId: bot.discordId,
                   avatar: await bot.getAvatar(),
-                  created: bot.created,
+                  created: bot.createdAt,
                 },
                 'bots:create'
               )
@@ -197,27 +203,51 @@ export default function () {
               .map(async (sub) => await DI.stripe.subscriptions.del(sub.id))
           )
 
-          const cmds = await BotCommand.query().where('botId', id)
+          const cmds = await BotCommand.query()
+            .where('botId', id)
+            .whereNull('deletedAt')
           for (const cmd of cmds) {
-            await BotCall.query().select('commandId', cmd.id).delete()
-            await cmd.$query().delete()
+            await BotCall.query()
+              .whereNull('deletedAt')
+              .select('commandId', cmd.id)
+              .patchAndFetch({
+                deletedAt: new Date(new Date().toUTCString()),
+              })
+            await cmd.$query().patchAndFetch({
+              deletedAt: new Date(),
+            })
           }
 
-          const msgs = await BotMessage.query().where('botId', id)
+          const msgs = await BotMessage.query()
+            .where('botId', id)
+            .whereNull('deletedAt')
           for (const msg of msgs) {
-            await BotCall.query().select('messageId', msg.id).delete()
-            await msg.$query().delete()
+            await BotCall.query()
+              .whereNull('deletedAt')
+              .select('messageId', msg.id)
+              .patchAndFetch({
+                deletedAt: new Date(new Date().toUTCString()),
+              })
+            await msg.$query().patchAndFetch({
+              deletedAt: new Date(new Date().toUTCString()),
+            })
           }
 
-          await BotDataStore.query().where('botId', id).delete()
+          await BotDataStore.query()
+            .where('botId', id)
+            .whereNull('deletedAt')
+            .patch({
+              deletedAt: new Date(new Date().toUTCString()),
+            })
 
-          const c = await Bot.query()
+          await Bot.query()
+            .whereNull('deletedAt')
             .findOne({
               ownerId: user.id,
             })
-            .deleteById(id)
-
-          if (c === 0) throw new Error("Couldn't destroy bot")
+            .patch({
+              deletedAt: new Date(new Date().toUTCString()),
+            })
 
           res.json(
             new BaseMessage(
@@ -269,7 +299,10 @@ export default function () {
       }
 
       const user: User = res.locals.auth.user
-      const query = Bot.query().where('ownerId', user.id).select('id')
+      const query = Bot.query()
+        .where('ownerId', user.id)
+        .whereNull('deletedAt')
+        .select('id')
       if (pageSize > 0) {
         const cache = await createPageQueryCache(
           Bot,

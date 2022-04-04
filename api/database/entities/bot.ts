@@ -6,11 +6,13 @@ import BotMessage from './botmessage'
 import User from './user'
 import BotInteraction from './botinteraction'
 
-const TIME_COLUMNS = ['created']
+const TIME_COLUMNS = ['createdAt', 'updatedAt', 'deletedAt']
 
 export default class Bot extends Model {
   id!: number
-  created!: number | string | Date
+  createdAt!: number | string | Date
+  updatedAt!: number | string | Date
+  deletedAt!: number | string | Date
   ownerId!: number
   owner!: User
   discordId!: string

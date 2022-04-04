@@ -2,13 +2,15 @@ import { Model, Pojo } from 'objection'
 import AccessToken from './accesstoken'
 import Bot from './bot'
 
-const TIME_COLUMNS = ['created']
+const TIME_COLUMNS = ['createdAt', 'updatedAt', 'deletedAt']
 
 export default class User extends Model {
   id!: number
   discordId!: string
   email!: string
-  created!: number | string | Date
+  createdAt!: number | string | Date
+  updatedAt!: number | string | Date
+  deletedAt!: number | string | Date
   accessTokens!: AccessToken[]
   bots!: Bot[]
   customerId!: string

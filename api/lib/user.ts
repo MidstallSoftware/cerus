@@ -18,7 +18,7 @@ export async function checkUser(header: string): Promise<User> {
   const username = `${self.username}#${self.discriminator}`
   const userCache = createQueryCache(
     User,
-    User.query().where('discordId', self.id)
+    User.query().where('discordId', self.id).whereNull('deletedAt')
   )
   let user = (await userCache.read())[0]
 
@@ -45,7 +45,10 @@ export async function checkUser(header: string): Promise<User> {
     if (
       ((
         (
-          await createQueryCache(User, User.query().count('id')).read()
+          await createQueryCache(
+            User,
+            User.query().whereNull('deletedAt').count('id')
+          ).read()
         )[0] as any
       )['count(`id`)'] as number) === 15
     )
@@ -70,7 +73,7 @@ export async function checkUser(header: string): Promise<User> {
         email: self.email,
         type: 'default',
         customerId: customer.id,
-        created: new Date(new Date().toUTCString()),
+        createdAt: new Date(new Date().toUTCString()),
       })
     } catch {
       return (await userCache.read())[0]

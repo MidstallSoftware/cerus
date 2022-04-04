@@ -11,7 +11,7 @@ export function transformMessage(msg: BotMessage): APIMessage {
     botId: msg.botId,
     regex: msg.regex,
     code: msg.code,
-    created: fixDate(msg.created),
+    created: fixDate(msg.createdAt),
     calls: (msg.calls || []).map(transformCall),
   }
 }
@@ -19,10 +19,13 @@ export function transformMessage(msg: BotMessage): APIMessage {
 export async function fetchMessage(
   query: QueryBuilder<BotMessage, BotMessage>
 ) {
-  const value = await createSingleQueryCache(BotMessage, query).read()
+  const value = await createSingleQueryCache(
+    BotMessage,
+    query.whereNull('deletedAt')
+  ).read()
   const valueCalls = (await createQueryCache(
     BotCall,
-    value.$relatedQuery('calls')
+    value.$relatedQuery('calls').whereNull('deletedAt')
   ).read()) as BotCall[]
 
   value.calls = valueCalls

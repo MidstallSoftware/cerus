@@ -10,7 +10,7 @@ export function transformCall(call: BotCall): APIInteractionCall {
     error: call.errors,
     message: call.messages,
     callerId: call.callerId,
-    timestamp: fixDate(call.dateTime),
+    timestamp: fixDate(call.createdAt),
     failed: call.failed,
     guildId: call.guildId,
     channelId: call.channelId,

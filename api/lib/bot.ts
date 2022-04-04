@@ -13,23 +13,36 @@ import { fetchCommand } from './command'
 import { fetchInteraction } from './interaction'
 
 export async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
-  const cache = createSingleQueryCache(Bot, query, 'bots')
+  const cache = createSingleQueryCache(
+    Bot,
+    query.whereNull('deletedAt'),
+    'bots'
+  )
 
   const value = await cache.read()
 
   const cacheMessages = createQueryCache(
     BotMessage,
-    BotMessage.query().where('botId', value.id).select('id'),
+    BotMessage.query()
+      .where('botId', value.id)
+      .whereNull('deletedAt')
+      .select('id'),
     'messages'
   )
   const cacheCommands = createQueryCache(
     BotCommand,
-    BotCommand.query().where('botId', value.id).select('id'),
+    BotCommand.query()
+      .where('botId', value.id)
+      .whereNull('deletedAt')
+      .select('id'),
     'commands'
   )
   const cacheInteractions = createQueryCache(
     BotInteraction,
-    BotInteraction.query().where('botId', value.id).select('id'),
+    BotInteraction.query()
+      .where('botId', value.id)
+      .whereNull('deletedAt')
+      .select('id'),
     'interactions'
   )
 
@@ -43,7 +56,7 @@ export async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
     discordId: value.discordId,
     avatar: await value.getAvatar(),
     running: DI.bots.has(value.id),
-    created: fixDate(value.created),
+    created: fixDate(value.createdAt),
     premium: value.premium === 1,
     messages: await Promise.all(
       valueMessages.map((v) => fetchMessage(v.$query()))
@@ -60,23 +73,23 @@ export async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
 export async function startBot(bot: Bot) {
   const cacheMessages = createQueryCache(
     BotMessage,
-    BotMessage.query().where('botId', bot.id),
+    BotMessage.query().where('botId', bot.id).whereNull('deletedAt'),
     'messages'
   )
   const cacheCommands = createQueryCache(
     BotCommand,
-    BotCommand.query().where('botId', bot.id),
+    BotCommand.query().where('botId', bot.id).whereNull('deletedAt'),
     'commands'
   )
   const cacheInteractions = createQueryCache(
     BotInteraction,
-    BotInteraction.query().where('botId', bot.id),
+    BotInteraction.query().where('botId', bot.id).whereNull('deletedAt'),
     'interactions'
   )
 
   const cacheUser = createSingleQueryCache(
     User,
-    User.query().findOne({ id: bot.ownerId })
+    User.query().findOne({ id: bot.ownerId }).whereNull('deletedAt')
   )
 
   const valueMessages = await cacheMessages.read()

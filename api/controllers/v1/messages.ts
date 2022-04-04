@@ -91,7 +91,7 @@ export default function () {
           const msg = await BotMessage.query().insertGraphAndFetch({
             botId,
             regex,
-            created: new Date(new Date().toUTCString()),
+            createdAt: new Date(new Date().toUTCString()),
           })
 
           res.json(new BaseMessage(transformMessage(msg), 'messages:create'))
@@ -111,16 +111,20 @@ export default function () {
         const user: User = res.locals.auth.user
 
         const run = async () => {
-          await BotCall.query().where('messageId', id).delete()
+          await BotCall.query()
+            .where('messageId', id)
+            .patchAndFetch({
+              deletedAt: new Date(new Date().toUTCString()),
+            })
 
-          const count = await BotMessage.query()
-            .deleteById(id)
+          await BotMessage.query()
+            .patchAndFetch({
+              deletedAt: new Date(new Date().toUTCString()),
+            })
             .whereIn(
               'botId',
               Bot.query().select('bots.id').where('ownerId', user.id)
             )
-
-          if (count === 0) throw new Error("Couldn't delete bot command")
 
           res.json(
             new BaseMessage(
@@ -144,12 +148,14 @@ export default function () {
 
         const id = parseInt(req.query.id.toString())
         const user: User = res.locals.auth.user
-        const obj: PartialModelObject<BotMessage> = {}
+        const obj: PartialModelObject<BotMessage> = {
+          updatedAt: new Date(new Date().toUTCString()),
+        }
 
         if (typeof req.body.regex === 'string') obj.regex = req.body.regex
         if (typeof req.body.code === 'string') obj.code = req.body.code
 
-        if (Object.keys(obj).length === 0) {
+        if (Object.keys(obj).length === 1) {
           throw new Error('No data was set to update')
         }
 
@@ -209,6 +215,7 @@ export default function () {
 
       const query = BotMessage.query()
         .where('botId', parseInt(req.query.botId.toString()))
+        .whereNull('deletedAt')
         .whereIn(
           'botId',
           Bot.query().select('bots.id').where('ownerId', user.id)
