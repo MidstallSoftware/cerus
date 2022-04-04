@@ -143,7 +143,8 @@
     "new-bot": "Create a Bot",
     "new-command": "New Command",
     "new-message": "New Message Hook",
-    "new-interaction": "New Interaction Hook"
+    "new-interaction": "New Interaction Hook",
+    "report-bot": "Report a bot"
   }
 }
 </i18n>
@@ -206,6 +207,7 @@ export default class LayoutUser extends Vue {
 
   get title(): string {
     const titleGen: Record<string, () => string> = {
+      'user-report': () => this.$t('report-bot').toString(),
       'user-bot-@new': () => this.$t('new-bot').toString(),
       'user-bot-bot-command-@new': () => this.$t('new-command').toString(),
       'user-bot-bot': () => this.$t('bot-info').toString(),
@@ -232,9 +234,9 @@ export default class LayoutUser extends Vue {
       },
     }
 
-    for (const str of Object.keys(titleGen)) {
-      const fn = titleGen[str]
-      if (this.$route.name.split('___', 2)[0] === str) return fn()
+    const titleKey = this.$route.name.split('___', 2)[0]
+    if (titleKey in titleGen) {
+      return titleGen[titleKey]()
     }
     return ''
   }
