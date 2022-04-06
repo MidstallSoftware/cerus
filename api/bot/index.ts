@@ -15,7 +15,7 @@ export default class BotInstance {
   constructor(botEntry: Bot) {
     this.entry = botEntry
     this.client = new Client({
-      intents: [Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILDS],
+      intents: Object.values(Intents.FLAGS),
     })
 
     this.client.on('messageCreate', (msg) => {
