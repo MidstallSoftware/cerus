@@ -15,7 +15,9 @@ export default class BotInstance {
   constructor(botEntry: Bot) {
     this.entry = botEntry
     this.client = new Client({
-      intents: Object.values(Intents.FLAGS),
+      intents: Object.keys(Intents.FLAGS)
+        .filter((v) => this.entry.intents.includes(v))
+        .map((v) => (Intents.FLAGS as Record<string, number>)[v]),
     })
 
     this.client.on('messageCreate', (msg) => {
