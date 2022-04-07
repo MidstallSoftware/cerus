@@ -90,6 +90,11 @@ export default function () {
             updatedAt: new Date(new Date().toUTCString()),
           }
           if (typeof req.body.token === 'string') update.token = req.body.token
+          if (
+            typeof req.body.intents === 'object' &&
+            Array.isArray(req.body.intents)
+          )
+            update.intents = req.body.intents
           if (typeof req.body.discordId === 'string')
             update.discordId = req.body.discordId
 
@@ -272,7 +277,8 @@ export default function () {
       const user: User = res.locals.auth.user
 
       const bot = await fetchBot(
-        Bot.query().findOne({ ownerId: user.id }).findById(id)
+        Bot.query().findOne({ ownerId: user.id }).findById(id),
+        true
       )
       return new BaseMessage(bot, 'bots:get')
     }),
@@ -285,7 +291,7 @@ export default function () {
 
       const send = async (results: Bot[], total: number) => {
         const list = await Promise.all(
-          results.map(({ id }) => fetchBot(Bot.query().findById(id)))
+          results.map(({ id }) => fetchBot(Bot.query().findById(id), true))
         )
         return new BaseMessage(
           {

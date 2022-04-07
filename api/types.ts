@@ -68,6 +68,8 @@ export interface APIBot extends APIObject {
   messages: APIMessage[]
   commands: APICommand[]
   interactions: APIBotInteraction[]
+  intents: number[]
+  token?: string
 }
 
 export interface APIReport extends APIObject {

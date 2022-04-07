@@ -10,6 +10,19 @@
         <v-card id="basic">
           <v-card-title>{{ $t('info') }}</v-card-title>
           <v-card-text>
+            <v-row>
+              <v-col cols="12">
+                <v-text-field
+                  v-model="bot.token"
+                  class="d-inline-block"
+                  type="password"
+                  :label="$t('token')"
+                />
+                <v-btn @click="updateToken">
+                  {{ $t('update-token') }}
+                </v-btn>
+              </v-col>
+            </v-row>
             <p>
               <fa :icon="['fas', bot.premium ? 'check' : 'xmark']" />
               {{ $t('premium') }}
@@ -107,6 +120,8 @@
     "snackbar-message-start": "The bot has been started",
     "snackbar-message-stop": "The bot has been shutdown",
     "close": "Close",
+    "token": "Token",
+    "update-token": "Update",
     "premium-management": "Premium",
     "premium-cancel": "Cancel",
     "premium-signup": "Sign up for Premium",
@@ -188,6 +203,22 @@ export default class PageUserBotSlug extends Vue {
       `https://discord.com/api/oauth2/authorize?client_id=${this.bot.discordId}&permissions=0&scope=bot%20applications.commands`,
       '_blank'
     )
+  }
+
+  updateToken() {
+    this.error = null
+    this.$axios
+      .$patch(`/api/v1/bots?id=${this.$route.params.bot}`, {
+        token: this.bot.token,
+      })
+      .then((msg: BaseMessageInterface) => {
+        msg.data.created = new Date(msg.data.created)
+        this.bot = msg.data
+      })
+      .catch(
+        (e) =>
+          (this.error = e.response ? { message: e.response.data.detail } : e)
+      )
   }
 
   startStop() {

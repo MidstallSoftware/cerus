@@ -22,6 +22,7 @@ export default class Bot extends Model {
   messages!: BotMessage[]
   interactions!: BotInteraction[]
   running!: boolean
+  intents!: number[]
 
   $parseDatabaseJson(json: Pojo) {
     json = super.$parseDatabaseJson(json)

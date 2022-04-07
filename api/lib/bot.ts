@@ -12,7 +12,10 @@ import { fetchMessage } from './message'
 import { fetchCommand } from './command'
 import { fetchInteraction } from './interaction'
 
-export async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
+export async function fetchBot(
+  query: QueryBuilder<Bot, Bot>,
+  token?: boolean
+): Promise<APIBot> {
   const cache = createSingleQueryCache(
     Bot,
     query.whereNull('deletedAt'),
@@ -58,6 +61,8 @@ export async function fetchBot(query: QueryBuilder<Bot, Bot>): Promise<APIBot> {
     running: DI.bots.has(value.id),
     created: fixDate(value.createdAt),
     premium: value.premium === 1,
+    intents: value.intents,
+    token: token ? value.token : null,
     messages: await Promise.all(
       valueMessages.map((v) => fetchMessage(v.$query()))
     ),
