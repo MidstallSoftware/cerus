@@ -192,7 +192,12 @@ export default class PageIndex extends Vue {
       .then((res) => {
         this.stats = (res.data as BaseMessageInterface).data
       })
-      .catch((e) => (this.statsError = e))
+      .catch(
+        (e) =>
+          (this.statsError = e.response
+            ? { message: e.response.data.detail }
+            : e)
+      )
   }
 
   formatUptime(uptime: {

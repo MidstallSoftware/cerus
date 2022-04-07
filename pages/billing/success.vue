@@ -65,7 +65,10 @@ export default class PageBillingSuccess extends Vue {
         .then((res) => {
           window.location.assign(res.data.data.url)
         })
-        .catch((e) => (this.error = e))
+        .catch(
+          (e) =>
+            (this.error = e.response ? { message: e.response.data.detail } : e)
+        )
     }
   }
 }

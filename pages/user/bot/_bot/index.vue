@@ -177,7 +177,10 @@ export default class PageUserBotSlug extends Vue {
         responseType: 'blob',
       })
       .then((res) => downloadFile(res, `cerus-${this.$route.params.bot}.xlsx`))
-      .catch((e) => (this.error = e))
+      .catch(
+        (e) =>
+          (this.error = e.response ? { message: e.response.data.detail } : e)
+      )
   }
 
   inviteBot() {
@@ -204,7 +207,10 @@ export default class PageUserBotSlug extends Vue {
           ).toString()
         })
         .finally(() => (this.startingStopping = false))
-        .catch((e) => (this.error = e))
+        .catch(
+          (e) =>
+            (this.error = e.response ? { message: e.response.data.detail } : e)
+        )
     }
   }
 
@@ -215,9 +221,10 @@ export default class PageUserBotSlug extends Vue {
       .then(() => {
         this.$router.push(`/user/`)
       })
-      .catch((e) => {
-        this.error = e
-      })
+      .catch(
+        (e) =>
+          (this.error = e.response ? { message: e.response.data.detail } : e)
+      )
   }
 
   cancelPremium() {
@@ -232,7 +239,10 @@ export default class PageUserBotSlug extends Vue {
         msg.data.created = new Date(msg.data.created)
         this.bot = msg.data
       })
-      .catch((e) => (this.error = e))
+      .catch(
+        (e) =>
+          (this.error = e.response ? { message: e.response.data.detail } : e)
+      )
   }
 
   premiumSubmit(e: Event) {
@@ -249,7 +259,10 @@ export default class PageUserBotSlug extends Vue {
         .then((res) => {
           window.location.assign(res.data.data.url)
         })
-        .catch((e) => (this.error = e))
+        .catch(
+          (e) =>
+            (this.error = e.response ? { message: e.response.data.detail } : e)
+        )
     }
   }
 }

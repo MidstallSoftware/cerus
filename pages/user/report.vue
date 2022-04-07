@@ -133,7 +133,10 @@ export default class PageUserReport extends Vue {
           this.content = ''
           this.files = []
         })
-        .catch((e) => (this.error = e))
+        .catch(
+          (e) =>
+            (this.error = e.response ? { message: e.response.data.detail } : e)
+        )
     }
   }
 }

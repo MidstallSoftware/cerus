@@ -58,7 +58,10 @@ export default class PageUserBotMessageNew extends Vue {
             `/user/bot/${this.$route.params.bot}/message/${res.data.data.id}`
           )
         })
-        .catch((e) => (this.error = e))
+        .catch(
+          (e) =>
+            (this.error = e.response ? { message: e.response.data.detail } : e)
+        )
     }
   }
 }

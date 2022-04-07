@@ -69,7 +69,10 @@ export default class PageUserBotInteractionNew extends Vue {
             `/user/bot/${this.$route.params.bot}/interaction/${res.data.data.id}`
           )
         })
-        .catch((e) => (this.error = e))
+        .catch(
+          (e) =>
+            (this.error = e.response ? { message: e.response.data.detail } : e)
+        )
     }
   }
 }

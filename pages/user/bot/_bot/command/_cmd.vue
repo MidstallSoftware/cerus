@@ -218,7 +218,7 @@ export default class PageUserBotCommandSlug extends Vue {
       })
       .then(() => (this.saving = false))
       .catch((e) => {
-        this.error = e
+        this.error = e.response ? { message: e.response.data.detail } : e
         setTimeout(() => this.save(), 30 * 60)
       })
   }, 20 * 60)
@@ -235,7 +235,10 @@ export default class PageUserBotCommandSlug extends Vue {
           `cerus-${this.$route.params.bot}-${this.$route.params.cmd}.xlsx`
         )
       )
-      .catch((e) => (this.error = e))
+      .catch(
+        (e) =>
+          (this.error = e.response ? { message: e.response.data.detail } : e)
+      )
   }
 
   deleteThis() {
@@ -245,9 +248,10 @@ export default class PageUserBotCommandSlug extends Vue {
       .then(() => {
         this.$router.replace(`/user/bot/${this.$route.params.bot}`)
       })
-      .catch((e) => {
-        this.error = e
-      })
+      .catch(
+        (e) =>
+          (this.error = e.response ? { message: e.response.data.detail } : e)
+      )
   }
 
   highlighter(code: string) {
@@ -272,7 +276,10 @@ export default class PageUserBotCommandSlug extends Vue {
           })
         this.command = msg.data
       })
-      .catch((e) => (this.error = e))
+      .catch(
+        (e) =>
+          (this.error = e.response ? { message: e.response.data.detail } : e)
+      )
   }
 
   premiumSubmit(e: Event) {
@@ -289,7 +296,10 @@ export default class PageUserBotCommandSlug extends Vue {
         .then((res) => {
           window.location.assign(res.data.data.url)
         })
-        .catch((e) => (this.error = e))
+        .catch(
+          (e) =>
+            (this.error = e.response ? { message: e.response.data.detail } : e)
+        )
     }
   }
 }

@@ -59,7 +59,12 @@ interface UserInfo {}
     this.$axios
       .get('/api/v1/user')
       .then((res) => ((this as PageUserIndex).userInfo = res.data.data))
-      .catch((e) => ((this as PageUserIndex).error = e))
+      .catch(
+        (e) =>
+          ((this as PageUserIndex).error = e.response
+            ? { message: e.response.data.detail }
+            : e)
+      )
   },
 })
 export default class PageUserIndex extends Vue {
@@ -71,7 +76,10 @@ export default class PageUserIndex extends Vue {
     this.$axios
       .$delete('/api/v1/user')
       .then(() => this.$auth.logout())
-      .catch((e) => (this.error = e))
+      .catch(
+        (e) =>
+          (this.error = e.response ? { message: e.response.data.detail } : e)
+      )
   }
 }
 </script>

@@ -154,7 +154,7 @@ export default class PageUserBotMessageSlug extends Vue {
       })
       .then(() => (this.saving = false))
       .catch((e) => {
-        this.error = e
+        this.error = e.response ? { message: e.response.data.detail } : e
         setTimeout(() => this.saveCode(), 30 * 60)
       })
   }, 20 * 60)
@@ -171,7 +171,10 @@ export default class PageUserBotMessageSlug extends Vue {
           `cerus-${this.$route.params.bot}-${this.$route.params.msg}.xlsx`
         )
       )
-      .catch((e) => (this.error = e))
+      .catch(
+        (e) =>
+          (this.error = e.response ? { message: e.response.data.detail } : e)
+      )
   }
 
   deleteThis() {
@@ -181,9 +184,10 @@ export default class PageUserBotMessageSlug extends Vue {
       .then(() => {
         this.$router.replace(`/user/bot/${this.$route.params.bot}`)
       })
-      .catch((e) => {
-        this.error = e
-      })
+      .catch(
+        (e) =>
+          (this.error = e.response ? { message: e.response.data.detail } : e)
+      )
   }
 
   highlighter(code: string) {

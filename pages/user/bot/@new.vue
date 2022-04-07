@@ -62,7 +62,10 @@ export default class PageUserBotNew extends Vue {
         .then((res) => {
           this.$router.push('/user/bot/' + res.data.data.id)
         })
-        .catch((e) => (this.error = e))
+        .catch(
+          (e) =>
+            (this.error = e.response ? { message: e.response.data.detail } : e)
+        )
     }
   }
 }
