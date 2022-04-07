@@ -31,6 +31,9 @@ export default class Bot extends Model {
         json[key] = new Date(json[key])
       }
     })
+
+    if (!Array.isArray(json.intents) && typeof json.intents === 'string')
+      json.intents = JSON.parse(json.intents)
     return json
   }
 
@@ -44,6 +47,8 @@ export default class Bot extends Model {
           .replace('Z', '')
       }
     })
+
+    if (Array.isArray(json.intents)) json.intents = JSON.stringify(json.intents)
     return json
   }
 
