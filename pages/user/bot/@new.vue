@@ -29,7 +29,7 @@
 {
   "en": {
     "title": "New Bot",
-    "discord-id": "Discord ID",
+    "discord-id": "Discord Application ID",
     "discord-token": "Discord Bot Token",
     "submit": "Submit"
   }
