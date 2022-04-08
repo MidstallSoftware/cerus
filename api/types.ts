@@ -14,6 +14,11 @@ export interface APIObject {
   created: Date
 }
 
+export interface APIUser extends APIObject {
+  email: string
+  type: 'admin' | 'default'
+}
+
 export interface APICommandCallSummary {
   thisMonth: number
   thisYear: number

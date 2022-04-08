@@ -104,6 +104,7 @@ export async function startBot(bot: Bot) {
 
   await bot.$query().patchAndFetch({
     running: true,
+    updatedAt: new Date(new Date().toUTCString()),
   })
 
   bot.messages = valueMessages

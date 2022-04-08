@@ -118,7 +118,8 @@ export default function () {
           res.json(
             new BaseMessage(
               await fetchBot(
-                Bot.query().findOne({ ownerId: user.id }).findById(id)
+                Bot.query().findOne({ ownerId: user.id }).findById(id),
+                true
               ),
               'bots:update'
             )

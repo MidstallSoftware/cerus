@@ -19,7 +19,6 @@ export default function () {
         {
           id: user.id,
           email: user.email,
-          discordid: user.discordId,
           type: user.type,
           created: fixDate(user.createdAt),
         },

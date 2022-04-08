@@ -20,5 +20,7 @@
       "password": "dbsecret"
     }
   ],
-  "sqltools.useNodeRuntime": true
+  "sqltools.useNodeRuntime": true,
+  "javascript.implicitProjectConfig.checkJs": true,
+  "javascript.validate.enable": true
 }

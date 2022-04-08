@@ -10,6 +10,7 @@ import express, {
 import fileUpload from 'express-fileupload'
 import winston from './providers/winston'
 import { notFoundHandler, errorHandler } from './middleware/error'
+import genAdmin from './routes/v1/admin'
 import genBilling from './routes/v1/billing'
 import genBots from './routes/v1/bots'
 import genCommands from './routes/v1/commands'
@@ -46,6 +47,7 @@ app.post(
 
 app.use(urlencoded({ extended: false }))
 app.use(json())
+app.use('/v1/admin', genAdmin())
 app.use('/v1/billing', genBilling())
 app.use('/v1/bots', genBots())
 app.use('/v1/commands', genCommands())

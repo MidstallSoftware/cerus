@@ -5,18 +5,21 @@
     </v-app-bar>
 
     <client-only>
-      <v-navigation-drawer v-if="isBotView" app permanent width="13vw">
+      <v-navigation-drawer v-if="isBotView" app permanent width="330">
         <v-navigation-drawer
           v-model="drawer"
           absolute
+          permanent
           mini-variant
-          mini-variant-width="2.7vw"
+          mini-variant-width="55"
         >
           <bots-navigation />
         </v-navigation-drawer>
         <div class="pl-15">
-          <h2 class="pl-16">{{ bot.name }}</h2>
           <v-list shaped>
+            <v-list-item>
+              <h2>{{ bot.name }}</h2>
+            </v-list-item>
             <v-list-item link>
               <a
                 :href="'/user/bot/' + $route.params.bot"
@@ -120,7 +123,7 @@
         app
         permanent
         mini-variant
-        mini-variant-width="2.7vw"
+        mini-variant-width="55"
       >
         <bots-navigation />
       </v-navigation-drawer>

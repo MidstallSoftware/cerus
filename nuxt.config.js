@@ -65,6 +65,7 @@ export default {
     '@nuxtjs/pwa',
     '@nuxtjs/auth-next',
     '@nuxtjs/i18n',
+    'nuxt-socket-io',
   ],
 
   auth: {
@@ -143,6 +144,7 @@ export default {
         'faXmark',
         'faCheck',
         'faQuestion',
+        'faHouse',
       ],
       brands: ['faGithub'],
     },
