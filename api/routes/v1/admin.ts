@@ -7,5 +7,6 @@ export default function () {
   const controller = genController()
 
   router.get('/stats', validateAuth, controller.stats)
+  router.get('/metrics', controller.metrics)
   return router
 }

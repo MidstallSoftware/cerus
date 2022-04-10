@@ -104,6 +104,7 @@ export default function () {
                       'EMAIL_PASSWORD',
                       'EMAIL_PORT',
                       'EMAIL_ADDRESS',
+                      'KAFKA_BROKERS',
                     ].includes(key)
                 )
               ),

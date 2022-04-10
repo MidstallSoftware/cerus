@@ -1,0 +1,8 @@
+scrape_configs:
+  - job_name: 'prometheus'
+    metrics_path: '/api/v1/admin/metrics'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['nuxt:3000']
+        labels:
+          service: 'cerus-nuxt'

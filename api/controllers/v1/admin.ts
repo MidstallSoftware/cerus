@@ -1,5 +1,7 @@
+import { resolve } from 'dns/promises'
 import { cpus, loadavg } from 'os'
 import { NextFunction, Request, Response } from 'express'
+import Prometheus from 'prom-client'
 import User from '../../database/entities/user'
 import { BaseMessage } from '../../message'
 import { HttpUnauthorizedError } from '../../exceptions'
@@ -49,6 +51,20 @@ export default function () {
       } catch (e) {
         next(e)
       }
+    },
+    metrics: (req: Request, res: Response, next: NextFunction) => {
+      resolve('prometheus')
+        .then((records) => {
+          if (records.includes(req.socket.remoteAddress)) {
+            res.set('Content-Type', Prometheus.register.contentType)
+            res.send(Prometheus.register.metrics())
+          } else {
+            throw new HttpUnauthorizedError(
+              'Must be send through the prometheus server'
+            )
+          }
+        })
+        .catch((e) => next(e))
     },
   }
 }
