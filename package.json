@@ -111,7 +111,7 @@
     "prismjs": "^1.27.0",
     "redis": "^4.0.4",
     "sass-loader": "^10.2.1",
-    "stripe": "^8.209.0",
+    "stripe": "^8.219.0",
     "stylelint": "^14.6.0",
     "stylelint-config-prettier": "^9.0.3",
     "stylelint-config-recommended-vue": "^1.1.0",
