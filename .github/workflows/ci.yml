@@ -21,10 +21,10 @@ jobs:
 
     steps:
       - name: Checkout 🛎
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
 
       - name: Checkout (Discord.JS) 🛎
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
         with:
           repository: MidstallSoftware/discord.js
           path: node_modules/discord.js
