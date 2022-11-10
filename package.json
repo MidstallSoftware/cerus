@@ -126,7 +126,7 @@
     "vue-property-decorator": "^9.1.2",
     "wait-on": "^6.0.1",
     "wasmoon": "^1.12.1",
-    "webpack": "^4.46.0",
+    "webpack": "^5.75.0",
     "winston": "^3.6.0"
   }
 }
